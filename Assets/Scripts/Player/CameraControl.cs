@@ -1,0 +1,107 @@
+using UnityEngine;
+
+public class CameraControl : MonoBehaviour
+{
+    [SerializeField] private Transform target;
+    [SerializeField] private Transform reticle;
+
+    [SerializeField] private float dstFromTarget = 4;
+    [SerializeField] private Vector2 targetDstMinMax = new Vector2(0, 30);
+
+    [SerializeField] private Vector2 pitchMinMax3rdPerson = new Vector2(-40, 80);
+    [SerializeField] private Vector2 pitchMinMax1stPerson = new Vector2(-20, 20);
+
+    [SerializeField] private bool cameraSmoothing = true;
+    [SerializeField] private float rotationSmoothing = 0.05f;
+    private Vector3 rotationSmoothVelocity;
+    private Vector3 currentRotation;
+
+    [SerializeField] private LayerMask ignoreLayers;
+
+    private float yaw;
+    private float pitch;
+
+    [SerializeField] private float sensitivity = 5f;
+    [SerializeField] private float zoomRate;
+
+    private void Start()
+    {
+        // If target is not set, automatically set it to the parent
+        if (target == null)
+        {
+            target = transform.parent;
+        }
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.F11))
+        {
+            Screen.fullScreen = !Screen.fullScreen;
+            if (Screen.fullScreen)
+            {
+                Screen.fullScreenMode = FullScreenMode.ExclusiveFullScreen;
+            }
+            else
+            {
+                Screen.fullScreenMode = FullScreenMode.Windowed;
+            }
+        }
+        if (!PlayerControl.Instance.paused)
+        {
+            // Translating inputs from mouse into smoothed rotation of camera
+            Vector2 look = PlayerControl.Instance.inputActions.Player.Look.ReadValue<Vector2>();
+            yaw += look.x * sensitivity;
+            pitch -= look.y * sensitivity;
+
+            // Zoom with scroll
+            float scroll = PlayerControl.Instance.inputActions.Player.Scroll.ReadValue<float>();
+            if (scroll > 0)
+            {
+                dstFromTarget = Mathf.Clamp(dstFromTarget - zoomRate, targetDstMinMax.x, targetDstMinMax.y);
+            }
+            else if (scroll < 0)
+            {
+                dstFromTarget = Mathf.Clamp(dstFromTarget + zoomRate, targetDstMinMax.x, targetDstMinMax.y);
+            }
+
+            reticle.gameObject.SetActive(true);
+            Cursor.visible = false;
+
+            if (dstFromTarget == 0)
+            {
+                Cursor.lockState = CursorLockMode.Locked;
+                reticle.position = new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 0);
+                pitch = Mathf.Clamp(pitch, pitchMinMax1stPerson.x, pitchMinMax1stPerson.y);
+            }
+            else
+            {
+                Cursor.lockState = CursorLockMode.Confined;
+                reticle.position = PlayerControl.Instance.inputActions.UI.Point.ReadValue<Vector2>();
+                pitch = Mathf.Clamp(pitch, pitchMinMax3rdPerson.x, pitchMinMax3rdPerson.y);
+            }
+
+            // Apply pitch and yaw
+            if (cameraSmoothing)
+            {
+                currentRotation = Vector3.SmoothDamp(currentRotation, new Vector3(pitch, yaw), ref rotationSmoothVelocity, rotationSmoothing);
+            }
+            else
+            {
+                currentRotation = new Vector3(pitch, yaw, currentRotation.z);
+            }
+            // Setting rotation and position of camera on previous params and target and dstFromTarget
+            transform.localEulerAngles = currentRotation;
+        }
+
+        // Prevent clipping of camera
+        if (Physics.Raycast(target.position, -transform.forward, out RaycastHit clippingHit, dstFromTarget, ~ignoreLayers))
+        {
+            transform.position = clippingHit.point + transform.forward * 0.1f;
+        }
+        else
+        {
+            transform.position = target.position - transform.forward * dstFromTarget;
+        }
+    }
+}
