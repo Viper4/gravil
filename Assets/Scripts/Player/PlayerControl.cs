@@ -1,8 +1,10 @@
+using System;
+using System.Collections;
 using TMPro;
 using Unity.Netcode;
-using Unity.Netcode.Components;
 using Unity.Services.Authentication;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class PlayerControl : NetworkBehaviour
 {
@@ -12,6 +14,7 @@ public class PlayerControl : NetworkBehaviour
     public string playerId;
     public bool paused = true;
 
+    private Vector2 moveInput;
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private float jumpVelocity = 2f;
 
@@ -22,29 +25,38 @@ public class PlayerControl : NetworkBehaviour
     [SerializeField] private float leanSpeed = 10f;
 
     public Transform playerModel;
+    public ButtonInteractable buttonInteractable;
 
     [SerializeField] private GameObject[] localOwnedObjects;
 
     [SerializeField] private MeshRenderer bodyRenderer;
-    [SerializeField] private MeshRenderer headRenderer;
+    [SerializeField] private MeshRenderer[] faceRenderers;
 
     public NetworkGravity gravity;
-    [SerializeField] private float gravityRotateSpeed = 100f;
-
-    [SerializeField] private Vector3[] gravityDirections = new Vector3[] { Vector3.down, Vector3.up, Vector3.back, Vector3.forward, Vector3.left, Vector3.right };
-    [SerializeField] private Vector3[] forwardDirections = new Vector3[] { Vector3.forward, Vector3.back, Vector3.left, Vector3.right, Vector3.up, Vector3.down };
-    private int gravityIndex = 0;
-    private int indexOffset = 0;
-    private Vector3 forwardDirection;
+    [SerializeField] private float gravityRotateSpeed = 125f;
 
     [SerializeField] private LayerMask collisionLayers;
     [SerializeField] private LayerMask hoverLayers;
 
     [SerializeField] private TextMeshProUGUI nameText;
 
-    public bool switchOthersOnGravityChange = false;
-
     [HideInInspector] public Transform hoveredObject;
+
+    private Rigidbody attachedRigidbody;
+
+    [SerializeField] private float landSpeedThreshold = 0.5f;
+    public UnityEvent OnStartMove;
+    public UnityEvent OnStopMove;
+    public UnityEvent OnJump;
+    public UnityEvent OnLand;
+    public UnityEvent<string> OnGroundChanged;
+
+    public bool isDead = false;
+    [SerializeField] private float deathTime = 1f;
+    [SerializeField] private GameObject dieEffectPrefab;
+    public bool canRespawn = true;
+    public Action OnDeath;
+    public Action OnRespawn;
 
     private void OnEnable()
     {
@@ -59,36 +71,37 @@ public class PlayerControl : NetworkBehaviour
 
     private void Start()
     {
-        if (!IsOwner)
+        attachedRigidbody = GetComponent<Rigidbody>();
+
+        if (IsOwner)
+        {
+            if (Instance == null)
+            {
+                Instance = this;
+                DontDestroyOnLoad(gameObject);
+
+                if (!IsServer)
+                {
+                    // Request that the host sends over everyones' data to this newly spawned player
+                    UpdatePlayerServerRpc(LobbyManager.Instance.playerName, LobbyManager.Instance.playerNameColor, LobbyManager.Instance.playerColor, AuthenticationService.Instance.PlayerId);
+                    NewPlayerUpdateServerRpc();
+                }
+                else
+                {
+                    UpdatePlayer(LobbyManager.Instance.playerName, LobbyManager.Instance.playerNameColor, LobbyManager.Instance.playerColor, AuthenticationService.Instance.PlayerId);
+                }
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
+        }
+        else
         {
             for (int i = 0; i < localOwnedObjects.Length; i++)
             {
                 Destroy(localOwnedObjects[i]);
             }
-            return;
-        }
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-
-            indexOffset = LobbyManager.Instance.joinedLobby.Players.Count - 1;
-            SetGravityIndex(indexOffset % gravityDirections.Length);
-
-            if (!IsServer)
-            {
-                // Request that the host sends over everyones' data to this newly spawned player
-                UpdatePlayerServerRpc(LobbyManager.Instance.playerName, LobbyManager.Instance.playerNameColor, LobbyManager.Instance.playerColor, AuthenticationService.Instance.PlayerId);
-                NewPlayerUpdateServerRpc();
-            }
-            else
-            {
-                UpdatePlayer(LobbyManager.Instance.playerName, LobbyManager.Instance.playerNameColor, LobbyManager.Instance.playerColor, AuthenticationService.Instance.PlayerId);
-            }
-        }
-        else
-        {
-            Destroy(gameObject);
         }
     }
 
@@ -106,12 +119,14 @@ public class PlayerControl : NetworkBehaviour
             }
             else
             {
+                OnStopMove?.Invoke();
                 paused = true;
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
             }
         }
 
+        // Raycast to get what the player is hovering over
         Vector3 screenPosition = inputActions.UI.Point.ReadValue<Vector2>();
         Ray ray = Camera.main.ScreenPointToRay(screenPosition);
         if (Physics.Raycast(ray, out RaycastHit hoverHit, Mathf.Infinity, hoverLayers))
@@ -125,84 +140,152 @@ public class PlayerControl : NetworkBehaviour
             hoveredObject = null;
         }
 
-        if (switchOthersOnGravityChange)
+        if (isDead)
+            return;
+
+        if (inputActions.Player.Gravity.triggered)
         {
-            if (inputActions.Player.GravitySwitch1.triggered)
+            Vector3 newGravityDirection = Vector3.zero;
+            Vector3 cameraForward = Camera.main.transform.forward;
+            
+            // Flattening camera forward vector to get a cardinal direction
+            if (Mathf.Abs(cameraForward.x) > Mathf.Abs(cameraForward.y))
             {
-                SwitchGravityServerRpc(1);
+                if(Mathf.Abs(cameraForward.x) > Mathf.Abs(cameraForward.z))
+                {
+                    newGravityDirection.x = cameraForward.x < 0 ? -1f : 1f;
+                }
+                else
+                {
+                    newGravityDirection.z = cameraForward.z < 0 ? -1f : 1f;
+                }
             }
-            else if (inputActions.Player.GravitySwitch2.triggered)
+            else
             {
-                SwitchGravityServerRpc(-1);
+                if(Mathf.Abs(cameraForward.y) > Mathf.Abs(cameraForward.z))
+                {
+                    newGravityDirection.y = cameraForward.y < 0 ? -1f : 1f;
+                }
+                else
+                {
+                    newGravityDirection.z = cameraForward.z < 0 ? -1f : 1f;
+                }
             }
+
+            gravity.SetDirection(newGravityDirection);
         }
-        else
-        {
-            if (inputActions.Player.GravitySwitch1.triggered)
-            {
-                IncrementGravityIndex(1);
-            }
-            else if (inputActions.Player.GravitySwitch2.triggered)
-            {
-                IncrementGravityIndex(-1);
-            }
-        }
-        
-        transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(forwardDirection, -gravity.direction), Time.deltaTime * gravityRotateSpeed);
+
+        // Rotate player to align with gravity
+        Quaternion targetRotation = Quaternion.FromToRotation(transform.up, -gravity.direction) * transform.rotation;
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, gravityRotateSpeed * Time.deltaTime);
+
+        // Rotate player model to lean with movement
+        playerModel.localEulerAngles = new Vector3(playerModel.localEulerAngles.x, Camera.main.transform.localEulerAngles.y, playerModel.localEulerAngles.z);
+        Vector3 lean = new Vector3(moveInput.y * maxLeanAngle, Camera.main.transform.localEulerAngles.y, -moveInput.x * maxLeanAngle);
+        playerModel.localRotation = Quaternion.RotateTowards(playerModel.localRotation, Quaternion.Euler(lean), leanSpeed * Time.deltaTime);
     }
 
     private void FixedUpdate()
     {
-        if (!IsOwner || !IsSpawned)
+        if (!IsOwner || !IsSpawned || isDead)
             return;
 
         if (!paused)
         {
-            Vector2 moveInput = inputActions.Player.Move.ReadValue<Vector2>().normalized;
-            Vector3 moveDirection = playerModel.forward * moveInput.y + playerModel.right * moveInput.x;
-            Vector3 verticalVelocity = Vector3.Project(gravity.attachedRB.linearVelocity, gravity.direction);
-            Vector3 horizontalVelocity = Vector3.ProjectOnPlane(moveDirection, gravity.direction).normalized * moveSpeed;
-            gravity.attachedRB.linearVelocity = verticalVelocity + horizontalVelocity;
-
-            if (isGrounded)
+            Vector2 newMoveInput = inputActions.Player.Move.ReadValue<Vector2>();
+            if(moveInput == Vector2.zero && newMoveInput != Vector2.zero)
             {
-                if (inputActions.Player.Jump.ReadValue<float>() > 0)
-                {
-                    gravity.attachedRB.linearVelocity -= gravity.direction * jumpVelocity;
-                }
+                OnStartMove?.Invoke();
             }
-            
-            // Lean with movement
-            playerModel.localEulerAngles = new Vector3(playerModel.localEulerAngles.x, Camera.main.transform.localEulerAngles.y, playerModel.localEulerAngles.z);
-            Vector3 lean = new Vector3(moveInput.y * maxLeanAngle, Camera.main.transform.localEulerAngles.y, -moveInput.x * maxLeanAngle);
-            playerModel.localRotation = Quaternion.RotateTowards(playerModel.localRotation, Quaternion.Euler(lean), leanSpeed * Time.fixedDeltaTime);
+            else if(newMoveInput == Vector2.zero && moveInput != Vector2.zero)
+            {
+                OnStopMove?.Invoke();
+            }
+            moveInput = newMoveInput;
+
+            Vector3 moveDirection = playerModel.forward * moveInput.y + playerModel.right * moveInput.x;
+            Vector3 verticalVelocity = Vector3.Project(attachedRigidbody.linearVelocity, gravity.direction);
+            Vector3 horizontalVelocity = Vector3.ProjectOnPlane(moveDirection, gravity.direction).normalized * moveSpeed;
+            Vector3 goalVelocity = verticalVelocity + horizontalVelocity;
+            Vector3 acceleration = (goalVelocity - attachedRigidbody.linearVelocity) / Time.fixedDeltaTime;
+            attachedRigidbody.AddForce(acceleration, ForceMode.Acceleration);
+
+            if (isGrounded && inputActions.Player.Jump.ReadValue<float>() > 0)
+            {
+                OnJump?.Invoke();
+                attachedRigidbody.linearVelocity -= gravity.direction * jumpVelocity;
+                isGrounded = false;
+                ground = null;
+                OnGroundChanged?.Invoke("Air");
+            }
+        }
+        else
+        {
+            moveInput = Vector2.zero;
         }
     }
 
     private void OnCollisionEnter(Collision collision)
     {
+        if (!IsOwner)
+            return;
+
         if (Vector3.Angle(collision.GetContact(0).normal, -gravity.direction) < 45f)
         {
             ground = collision.transform;
             isGrounded = true;
+            OnGroundChanged?.Invoke(ground.tag);
+            if (collision.relativeVelocity.magnitude > landSpeedThreshold)
+            {
+                OnLand?.Invoke();
+            }
         }
     }
 
     private void OnCollisionExit(Collision collision)
     {
+        if (!IsOwner)
+            return;
+
         if (collision.transform == ground)
         {
             ground = null;
             isGrounded = false;
+            OnGroundChanged?.Invoke("Air");
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (!IsOwner)
+            return;
+
+        switch(other.tag)
+        {
+            case "DeathZone":
+                if (IsServer)
+                {
+                    Die();
+                    DieClientRpc();
+                }
+                else
+                {
+                    DieServerRpc();
+                }
+                break;
         }
     }
 
     private void UpdatePlayer(string name, Color nameColor, Color bodyColor, string playerId) 
     {
+        this.name = name;
         nameText.text = name;
         nameText.color = nameColor;
         bodyRenderer.material.color = bodyColor;
-        headRenderer.material.color = new Color(1 - nameColor.r, 1 - nameColor.g, 1 - nameColor.b, nameColor.a);
+        foreach(MeshRenderer meshRenderer in faceRenderers)
+        {
+            meshRenderer.material.color = new Color(1 - nameColor.r, 1 - nameColor.g, 1 - nameColor.b, nameColor.a);
+        }
         this.playerId = playerId;
     }
 
@@ -225,49 +308,53 @@ public class PlayerControl : NetworkBehaviour
         if (IsServer)
         {
             Instance.UpdatePlayerClientRpc(LobbyManager.Instance.playerName, LobbyManager.Instance.playerNameColor, LobbyManager.Instance.playerColor, AuthenticationService.Instance.PlayerId);
-            Instance.UpdateGravityClientRpc(Instance.gravityIndex);
         }
+    }
+
+    private void Die()
+    {
+        isDead = true;
+        OnStopMove?.Invoke();
+        StartCoroutine(DeathAnimation());
+        OnDeath?.Invoke();
     }
 
     [ServerRpc]
-    public void SwitchGravityServerRpc(int increment)
+    private void DieServerRpc()
     {
-        if (IsServer)
-        {
-            Instance.IncrementGravityIndex(increment);
-        }
+        Die();
+        DieClientRpc();
     }
 
     [ClientRpc]
-    public void UpdateGravityClientRpc(int hostGravityIndex)
+    private void DieClientRpc()
     {
-        if (!IsServer && IsOwner)
-        {
-            SetGravityIndex((hostGravityIndex + indexOffset) % gravityDirections.Length);
-        }
+        Die();
     }
 
-    public void IncrementGravityIndex(int increment)
+    private void Respawn()
     {
-        SetGravityIndex(gravityIndex + increment);
-        if (IsServer && switchOthersOnGravityChange)
-        {
-            Instance.UpdateGravityClientRpc(gravityIndex);
-        }
+        attachedRigidbody.isKinematic = false;
+        isDead = false;
+        playerModel.gameObject.SetActive(true);
+        OnRespawn?.Invoke();
     }
 
-    public void SetGravityIndex(int newGravityIndex)
+    private IEnumerator DeathAnimation()
     {
-        gravityIndex = newGravityIndex;
-        if (gravityIndex >= gravityDirections.Length)
+        attachedRigidbody.isKinematic = true;
+        playerModel.gameObject.SetActive(false);
+        ParticleSystem dieParticles = Instantiate(dieEffectPrefab, transform.position, transform.rotation).GetComponent<ParticleSystem>();
+        ParticleSystem.ForceOverLifetimeModule forceOverLifetime = dieParticles.forceOverLifetime;
+        forceOverLifetime.x = gravity.direction.x * gravity.acceleration;
+        forceOverLifetime.y = gravity.direction.y * gravity.acceleration;
+        forceOverLifetime.z = gravity.direction.z * gravity.acceleration;
+        dieParticles.Play();
+        Destroy(dieParticles.gameObject, dieParticles.main.duration);
+        yield return new WaitForSeconds(deathTime);
+        if (canRespawn)
         {
-            gravityIndex = 0;
+            Respawn();
         }
-        else if (gravityIndex < 0)
-        {
-            gravityIndex = gravityDirections.Length - 1;
-        }
-        gravity.SetDirection(gravityDirections[gravityIndex]);
-        forwardDirection = forwardDirections[gravityIndex];
     }
 }

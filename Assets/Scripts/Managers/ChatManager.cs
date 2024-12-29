@@ -1,10 +1,8 @@
 using System;
 using System.Linq;
-using Unity.Services.Authentication;
-using Unity.Services.Core;
 using Unity.Services.Vivox;
-using UnityEditor.MemoryProfiler;
 using UnityEngine;
+using System.Collections.Generic;
 
 public class ChatManager : MonoBehaviour
 {
@@ -18,6 +16,8 @@ public class ChatManager : MonoBehaviour
     private string currentChannelName;
 
     [SerializeField] private GameObject connectionUI;
+
+    public Dictionary<string, VivoxParticipant> participants = new Dictionary<string, VivoxParticipant>();
 
     private async void Start()
     {
@@ -61,6 +61,12 @@ public class ChatManager : MonoBehaviour
         connectionUI.SetActive(true);
         await VivoxService.Instance.JoinGroupChannelAsync(channelName, ChatCapability.AudioOnly, options);
         currentChannelName = channelName;
+        foreach(VivoxParticipant participant in VivoxService.Instance.ActiveChannels[currentChannelName])
+        {
+            if(participants.ContainsKey(participant.PlayerId))
+                continue;
+            participants.Add(participant.PlayerId, participant);
+        }
     }
 
     private async void LeaveVoiceGroup()
@@ -72,11 +78,12 @@ public class ChatManager : MonoBehaviour
     private void OnParticipantAddedToChannel(VivoxParticipant participant)
     {
         connectionUI.SetActive(false);
+        participants.Add(participant.PlayerId, participant);
     }
 
     private void OnParticipantRemovedFromChannel(VivoxParticipant participant)
     {
-
+        participants.Remove(participant.PlayerId);
     }
 
     public async void MuteSelf()

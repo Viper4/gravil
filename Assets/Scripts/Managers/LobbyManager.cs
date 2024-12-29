@@ -486,12 +486,10 @@ public class LobbyManager : MonoBehaviour
     {
         if (hostLobby != null)
         {
-            Debug.Log("Start game host");
             UpdateGameData(true);
             levelName = "Level";
             levelIndex = 0;
             NetworkManager.Singleton.SceneManager.LoadScene(levelName + " " + levelIndex, LoadSceneMode.Single);
-            //SceneLoader.Instance.LoadScene(levelName + " " + levelIndex);
         }
     }
 
@@ -499,10 +497,8 @@ public class LobbyManager : MonoBehaviour
     {
         if (hostLobby != null)
         {
-            Debug.Log("Load next level");
             levelIndex++;
             NetworkManager.Singleton.SceneManager.LoadScene(levelName + " " + levelIndex, LoadSceneMode.Single);
-            //SceneLoader.Instance.LoadScene(levelName + " " + levelIndex);
         }
     }
 

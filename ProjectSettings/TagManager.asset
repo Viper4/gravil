@@ -5,6 +5,22 @@ TagManager:
   serializedVersion: 3
   tags:
   - ButtonInteractable
+  - DirtyGround
+  - Grass
+  - Gravel
+  - Leaves
+  - MetalV1
+  - MetalV2
+  - Mud
+  - Rock
+  - Sand
+  - SnowHard
+  - Snow
+  - Tile
+  - WaterV1
+  - WaterV2
+  - Wood
+  - DeathZone
   layers:
   - Default
   - TransparentFX
@@ -12,9 +28,9 @@ TagManager:
   - Solid
   - Water
   - UI
-  - 
-  - 
-  - 
+  - Player
+  - Ignore Physics
+  - Glass
   - 
   - 
   - 

@@ -67,7 +67,7 @@ GameObject:
   - component: {fileID: 3442120149342490707}
   m_Layer: 0
   m_Name: Moving Part
-  m_TagString: Untagged
+  m_TagString: MetalV2
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -178,7 +178,7 @@ GameObject:
   - component: {fileID: 8089346388262168736}
   m_Layer: 0
   m_Name: Level Button
-  m_TagString: Untagged
+  m_TagString: MetalV1
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -193,7 +193,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 9, z: 0}
-  m_LocalScale: {x: 3, y: 0.25, z: 3}
+  m_LocalScale: {x: 3, y: 0.251, z: 3}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5739276589347202138}
@@ -315,6 +315,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   movingPart: {fileID: 5739276589347202138}
+  triggerCollider: {fileID: 2951760580402400568}
   startPosition: {x: 0, y: 1, z: 0}
   endPosition: {x: 0, y: 0.1, z: 0}
   moveSpeed: 10
@@ -330,6 +331,6 @@ MonoBehaviour:
   OnEndRelease:
     m_PersistentCalls:
       m_Calls: []
-  interactTags:
-  - Player
-  - ButtonInteractable
+  ignoreLayers:
+    serializedVersion: 2
+    m_Bits: 162

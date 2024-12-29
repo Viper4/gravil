@@ -4,18 +4,20 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public class NetworkGravity : NetworkBehaviour
 {
-    [HideInInspector] public Rigidbody attachedRB;
+    public Rigidbody attachedRigidbody { get; private set; }
 
     public float acceleration = 9.81f;
     public Vector3 direction { get; private set; } = Vector3.down;
-    [SerializeField] private NetworkVariable<float> directionX = new NetworkVariable<float>(0f);
-    [SerializeField] private NetworkVariable<float> directionY = new NetworkVariable<float>(-1f);
-    [SerializeField] private NetworkVariable<float> directionZ = new NetworkVariable<float>(0f);
+    [SerializeField] private NetworkVariable<float> directionX = new NetworkVariable<float>(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    [SerializeField] private NetworkVariable<float> directionY = new NetworkVariable<float>(-1f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    [SerializeField] private NetworkVariable<float> directionZ = new NetworkVariable<float>(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+
+    [SerializeField] private float terminalVelocity = 53f;
 
     private void Start()
     {
-        attachedRB = GetComponent<Rigidbody>();
-        attachedRB.useGravity = false;
+        attachedRigidbody = GetComponent<Rigidbody>();
+        attachedRigidbody.useGravity = false;
 
         direction = new Vector3(directionX.Value, directionY.Value, directionZ.Value);
         directionX.OnValueChanged += (prevVal, newVal) => OnDirectionChanged();
@@ -25,9 +27,12 @@ public class NetworkGravity : NetworkBehaviour
 
     private void FixedUpdate()
     {
-        if (!attachedRB.isKinematic)
+        if (!attachedRigidbody.isKinematic)
         {
-            attachedRB.AddForce(direction * acceleration, ForceMode.Acceleration);
+            if(Vector3.Dot(attachedRigidbody.linearVelocity, direction) < terminalVelocity)
+            {
+                attachedRigidbody.AddForce(direction * acceleration, ForceMode.Acceleration);
+            }
         }
     }
 

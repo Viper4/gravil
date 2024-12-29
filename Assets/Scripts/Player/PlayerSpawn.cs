@@ -5,7 +5,17 @@ public class PlayerSpawn : MonoBehaviour
 {
     private Collider _collider;
 
-    [SerializeField] private int gravityIndex = -1;
+    [SerializeField] private Vector3 defaultGravityDirection;
+
+    private void OnEnable()
+    {
+        PlayerControl.Instance.OnRespawn += ResetPlayer;
+    }
+
+    private void OnDisable()
+    {
+        PlayerControl.Instance.OnRespawn -= ResetPlayer;
+    }
 
     private void Awake()
     {
@@ -24,9 +34,10 @@ public class PlayerSpawn : MonoBehaviour
     private void ResetPlayer()
     {
         PlayerControl.Instance.isGrounded = false;
-        if(gravityIndex != -1)
+        PlayerControl.Instance.buttonInteractable.ForceRemoveInteract();
+        if(defaultGravityDirection != Vector3.zero)
         {
-            PlayerControl.Instance.SetGravityIndex(gravityIndex);
+            PlayerControl.Instance.gravity.SetDirection(defaultGravityDirection);
         }
         PlayerControl.Instance.transform.position = CustomRandom.GetPointInCollider(_collider);
     }

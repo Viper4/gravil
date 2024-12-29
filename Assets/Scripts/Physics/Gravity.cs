@@ -1,25 +1,29 @@
-using Unity.Netcode;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
 public class Gravity : MonoBehaviour
 {
-    [HideInInspector] public Rigidbody attachedRB;
+    [HideInInspector] public Rigidbody attachedRigidbody;
 
     public float acceleration = 9.81f;
     public Vector3 direction = Vector3.down;
 
+    [SerializeField] private float terminalVelocity = 53f;
+
     private void Start()
     {
-        attachedRB = GetComponent<Rigidbody>();
-        attachedRB.useGravity = false;
+        attachedRigidbody = GetComponent<Rigidbody>();
+        attachedRigidbody.useGravity = false;
     }
 
     private void FixedUpdate()
     {
-        if (!attachedRB.isKinematic)
+        if (!attachedRigidbody.isKinematic)
         {
-            attachedRB.AddForce(direction * acceleration, ForceMode.Acceleration);
+            if (Vector3.Dot(attachedRigidbody.linearVelocity, direction) < terminalVelocity)
+            {
+                attachedRigidbody.AddForce(direction * acceleration, ForceMode.Acceleration);
+            }
         }
     }
 }

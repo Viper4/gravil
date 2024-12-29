@@ -118,18 +118,9 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": true
                 },
                 {
-                    ""name"": ""GravitySwitch1"",
+                    ""name"": ""Gravity"",
                     ""type"": ""Button"",
                     ""id"": ""b73cac0d-1b33-4742-9e5b-4356ed628dc3"",
-                    ""expectedControlType"": """",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false
-                },
-                {
-                    ""name"": ""GravitySwitch2"",
-                    ""type"": ""Button"",
-                    ""id"": ""9ce7035d-ebc1-41bb-97b8-ca7edde677b2"",
                     ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
@@ -545,22 +536,11 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""a5955279-107a-42c8-b9cf-7f281ee38279"",
-                    ""path"": ""<Keyboard>/c"",
+                    ""path"": ""<Keyboard>/q"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""GravitySwitch1"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""3ede9ea4-6347-447d-bd78-d70daeb03f3a"",
-                    ""path"": ""<Keyboard>/x"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""GravitySwitch2"",
+                    ""action"": ""Gravity"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -1209,8 +1189,7 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         m_Player_Next = m_Player.FindAction("Next", throwIfNotFound: true);
         m_Player_Sprint = m_Player.FindAction("Sprint", throwIfNotFound: true);
         m_Player_Scroll = m_Player.FindAction("Scroll", throwIfNotFound: true);
-        m_Player_GravitySwitch1 = m_Player.FindAction("GravitySwitch1", throwIfNotFound: true);
-        m_Player_GravitySwitch2 = m_Player.FindAction("GravitySwitch2", throwIfNotFound: true);
+        m_Player_Gravity = m_Player.FindAction("Gravity", throwIfNotFound: true);
         m_Player_Reset = m_Player.FindAction("Reset", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
@@ -1303,8 +1282,7 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Next;
     private readonly InputAction m_Player_Sprint;
     private readonly InputAction m_Player_Scroll;
-    private readonly InputAction m_Player_GravitySwitch1;
-    private readonly InputAction m_Player_GravitySwitch2;
+    private readonly InputAction m_Player_Gravity;
     private readonly InputAction m_Player_Reset;
     public struct PlayerActions
     {
@@ -1320,8 +1298,7 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         public InputAction @Next => m_Wrapper.m_Player_Next;
         public InputAction @Sprint => m_Wrapper.m_Player_Sprint;
         public InputAction @Scroll => m_Wrapper.m_Player_Scroll;
-        public InputAction @GravitySwitch1 => m_Wrapper.m_Player_GravitySwitch1;
-        public InputAction @GravitySwitch2 => m_Wrapper.m_Player_GravitySwitch2;
+        public InputAction @Gravity => m_Wrapper.m_Player_Gravity;
         public InputAction @Reset => m_Wrapper.m_Player_Reset;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
@@ -1362,12 +1339,9 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
             @Scroll.started += instance.OnScroll;
             @Scroll.performed += instance.OnScroll;
             @Scroll.canceled += instance.OnScroll;
-            @GravitySwitch1.started += instance.OnGravitySwitch1;
-            @GravitySwitch1.performed += instance.OnGravitySwitch1;
-            @GravitySwitch1.canceled += instance.OnGravitySwitch1;
-            @GravitySwitch2.started += instance.OnGravitySwitch2;
-            @GravitySwitch2.performed += instance.OnGravitySwitch2;
-            @GravitySwitch2.canceled += instance.OnGravitySwitch2;
+            @Gravity.started += instance.OnGravity;
+            @Gravity.performed += instance.OnGravity;
+            @Gravity.canceled += instance.OnGravity;
             @Reset.started += instance.OnReset;
             @Reset.performed += instance.OnReset;
             @Reset.canceled += instance.OnReset;
@@ -1405,12 +1379,9 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
             @Scroll.started -= instance.OnScroll;
             @Scroll.performed -= instance.OnScroll;
             @Scroll.canceled -= instance.OnScroll;
-            @GravitySwitch1.started -= instance.OnGravitySwitch1;
-            @GravitySwitch1.performed -= instance.OnGravitySwitch1;
-            @GravitySwitch1.canceled -= instance.OnGravitySwitch1;
-            @GravitySwitch2.started -= instance.OnGravitySwitch2;
-            @GravitySwitch2.performed -= instance.OnGravitySwitch2;
-            @GravitySwitch2.canceled -= instance.OnGravitySwitch2;
+            @Gravity.started -= instance.OnGravity;
+            @Gravity.performed -= instance.OnGravity;
+            @Gravity.canceled -= instance.OnGravity;
             @Reset.started -= instance.OnReset;
             @Reset.performed -= instance.OnReset;
             @Reset.canceled -= instance.OnReset;
@@ -1622,8 +1593,7 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         void OnNext(InputAction.CallbackContext context);
         void OnSprint(InputAction.CallbackContext context);
         void OnScroll(InputAction.CallbackContext context);
-        void OnGravitySwitch1(InputAction.CallbackContext context);
-        void OnGravitySwitch2(InputAction.CallbackContext context);
+        void OnGravity(InputAction.CallbackContext context);
         void OnReset(InputAction.CallbackContext context);
     }
     public interface IUIActions

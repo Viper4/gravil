@@ -1,14 +1,15 @@
+using Unity.Netcode;
 using UnityEngine;
-using Unity;
 
-[RequireComponent(typeof(Rigidbody))]
-public class GrabbableRigidbody : MonoBehaviour
+[RequireComponent(typeof(NetworkRigidbodyTransfer))]
+public class GrabbableRigidbody : NetworkBehaviour
 {
-    private Rigidbody rb;
+    private NetworkRigidbodyTransfer networkRigidbodyTransfer;
     private Collider _collider;
+    private ButtonInteractable buttonInteractable;
 
     private bool ownerInTrigger;
-    private bool isGrabbed;
+    [SerializeField] private NetworkVariable<bool> isGrabbed = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     [SerializeField] private float grabDistance = 0.5f;
 
@@ -19,66 +20,83 @@ public class GrabbableRigidbody : MonoBehaviour
 
     private float extents;
 
+    [SerializeField] private bool setColliderEnabled = true;
+    private int originalLayer;
+    [SerializeField] private int grabbedLayer = 2;
+
+    private void OnEnable()
+    {
+        isGrabbed.OnValueChanged += OnIsGrabbedChanged;
+    }
+
+    private void OnDisable()
+    {
+        isGrabbed.OnValueChanged -= OnIsGrabbedChanged;
+    }
+
     private void Start()
     {
-        rb = GetComponent<Rigidbody>();
+        networkRigidbodyTransfer = GetComponent<NetworkRigidbodyTransfer>();
         _collider = GetComponent<Collider>();
+        buttonInteractable = GetComponent<ButtonInteractable>();
         extents = _collider.bounds.extents.z;
+        originalLayer = gameObject.layer;
     }
 
     private void Update()
     {
-        if (ownerInTrigger)
+        if (isGrabbed.Value)
         {
-            if (isGrabbed)
+            if (setColliderEnabled)
+                _collider.enabled = false;
+            highlight.SetActive(false);
+            popup.SetActive(false);
+            networkRigidbodyTransfer.Rigidbody.isKinematic = true;
+            gameObject.layer = grabbedLayer;
+
+            if (IsOwner)
             {
-                highlight.SetActive(false);
-                popup.SetActive(false);
-                if (PlayerControl.Instance.inputActions.Player.Interact.triggered)
+                if (Physics.Raycast(PlayerControl.Instance.playerModel.position, PlayerControl.Instance.playerModel.forward, out RaycastHit hit, grabDistance + extents, solidLayers))
                 {
-                    isGrabbed = false;
-                    _collider.enabled = true;
-                    rb.isKinematic = false;
-                }
-            }
-            else
-            {
-                if (PlayerControl.Instance.hoveredObject == transform)
-                {
-                    highlight.SetActive(true);
-                    popup.SetActive(true);
-                    if (PlayerControl.Instance.inputActions.Player.Interact.triggered)
-                    {
-                        highlight.SetActive(false);
-                        isGrabbed = true;
-                        _collider.enabled = false;
-                        rb.isKinematic = true;
-                    }
+                    transform.position = hit.point + (hit.normal * extents);
                 }
                 else
                 {
-                    highlight.SetActive(false);
-                    popup.SetActive(false);
+                    transform.position = PlayerControl.Instance.playerModel.position + PlayerControl.Instance.playerModel.forward * grabDistance;
+                }
+
+                if (PlayerControl.Instance.inputActions.Player.Interact.triggered || PlayerControl.Instance.isDead)
+                {
+                    Release();
                 }
             }
         }
-
-        if (isGrabbed)
+        else
         {
-            if (Physics.Raycast(PlayerControl.Instance.playerModel.position, PlayerControl.Instance.playerModel.forward, out RaycastHit hit, grabDistance + extents, solidLayers))
+            if (setColliderEnabled)
+                _collider.enabled = true;
+            gameObject.layer = originalLayer;
+
+            if (ownerInTrigger && PlayerControl.Instance.hoveredObject == transform && !PlayerControl.Instance.isDead)
             {
-                transform.position = hit.point + (hit.normal * extents);
+                highlight.SetActive(true);
+                popup.SetActive(true);
+                if (PlayerControl.Instance.inputActions.Player.Interact.triggered)
+                {
+                    Grab(PlayerControl.Instance.OwnerClientId);
+                }
             }
             else
             {
-                transform.position = PlayerControl.Instance.playerModel.position + PlayerControl.Instance.playerModel.forward * grabDistance;
+                highlight.SetActive(false);
+                popup.SetActive(false);
             }
         }
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!isGrabbed && !other.isTrigger && other.CompareTag("Player"))
+        if (!isGrabbed.Value && !other.isTrigger && other.CompareTag("Player"))
         {
             if (other.attachedRigidbody.GetComponent<PlayerControl>().IsOwner)
             {
@@ -89,15 +107,99 @@ public class GrabbableRigidbody : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
-        if (!isGrabbed && !other.isTrigger && other.CompareTag("Player"))
+        if (!isGrabbed.Value && !other.isTrigger && other.CompareTag("Player"))
         {
             if (other.attachedRigidbody.GetComponent<PlayerControl>().IsOwner)
             {
                 ownerInTrigger = false;
                 highlight.SetActive(false);
                 popup.SetActive(false);
-                isGrabbed = false;
             }
+        }
+    }
+
+    public void Grab(ulong clientId)
+    {
+        if (buttonInteractable != null)
+        {
+            buttonInteractable.ForceRemoveInteract();
+        }
+        if (IsServer)
+        {
+            if (networkRigidbodyTransfer != null)
+            {
+                networkRigidbodyTransfer.ChangeOwnership(clientId);
+                networkRigidbodyTransfer.canChangeOwnership = false;
+            }
+            isGrabbed.Value = true;
+        }
+        else
+        {
+            GrabServerRpc(clientId);
+        }
+    }
+
+    public void Release()
+    {
+        if (IsServer)
+        {
+            if (networkRigidbodyTransfer != null)
+            {
+                networkRigidbodyTransfer.canChangeOwnership = true;
+            }
+            isGrabbed.Value = false;
+        }
+        else
+        {
+            ReleaseServerRpc();
+        }
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void GrabServerRpc(ulong clientId)
+    {
+        if (buttonInteractable != null)
+        {
+            buttonInteractable.ForceRemoveInteract();
+        }
+        if (networkRigidbodyTransfer != null)
+        {
+            networkRigidbodyTransfer.ChangeOwnership(clientId);
+            networkRigidbodyTransfer.canChangeOwnership = false;
+        }
+        isGrabbed.Value = true;
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void ReleaseServerRpc()
+    {
+        if (networkRigidbodyTransfer != null)
+        {
+            networkRigidbodyTransfer.canChangeOwnership = true;
+        }
+        isGrabbed.Value = false;
+    }
+
+    public override void OnGainedOwnership()
+    {
+        base.OnGainedOwnership();
+        if(isGrabbed.Value)
+        {
+            highlight.SetActive(false);
+            networkRigidbodyTransfer.Rigidbody.isKinematic = true;
+        }
+        else
+        {
+            networkRigidbodyTransfer.Rigidbody.isKinematic = false;
+        }
+    }
+
+    private void OnIsGrabbedChanged(bool previousValue, bool newValue)
+    {
+        if (IsOwner && previousValue && !newValue)
+        {
+            networkRigidbodyTransfer.Rigidbody.isKinematic = false;
+            networkRigidbodyTransfer.Rigidbody.linearVelocity = PlayerControl.Instance.gravity.attachedRigidbody.linearVelocity;
         }
     }
 }

@@ -96,18 +96,9 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "GravitySwitch1",
+                    "name": "Gravity",
                     "type": "Button",
                     "id": "b73cac0d-1b33-4742-9e5b-4356ed628dc3",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "GravitySwitch2",
-                    "type": "Button",
-                    "id": "9ce7035d-ebc1-41bb-97b8-ca7edde677b2",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -523,22 +514,11 @@
                 {
                     "name": "",
                     "id": "a5955279-107a-42c8-b9cf-7f281ee38279",
-                    "path": "<Keyboard>/c",
+                    "path": "<Keyboard>/q",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "GravitySwitch1",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "3ede9ea4-6347-447d-bd78-d70daeb03f3a",
-                    "path": "<Keyboard>/x",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "GravitySwitch2",
+                    "action": "Gravity",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

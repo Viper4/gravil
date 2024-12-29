@@ -149,7 +149,7 @@ public class LobbyUI : MonoBehaviour
 
     private void LobbySettingsInputFieldChanged()
     {
-        createLobbyButton.interactable = !string.IsNullOrEmpty(lobbyNameInput.text) && !string.IsNullOrEmpty(maxPlayersInput.text) && int.Parse(maxPlayersInput.text) > 0;
+        createLobbyButton.interactable = !string.IsNullOrEmpty(lobbyNameInput.text) && !string.IsNullOrEmpty(maxPlayersInput.text) && int.Parse(maxPlayersInput.text) > 1;
     }
 
     private void EndEditLobbySettings()
@@ -159,7 +159,7 @@ public class LobbyUI : MonoBehaviour
             if (!string.IsNullOrEmpty(lobbyNameInput.text) && !string.IsNullOrEmpty(maxPlayersInput.text))
             {
                 int maxPlayers = int.Parse(maxPlayersInput.text);
-                if (maxPlayers > 0)
+                if (maxPlayers > 1)
                 {
                     LobbyManager.Instance.UpdateLobbySettings(lobbyNameInput.text, maxPlayers);
                 }
@@ -177,7 +177,7 @@ public class LobbyUI : MonoBehaviour
         if (!string.IsNullOrEmpty(lobbyNameInput.text) && !string.IsNullOrEmpty(maxPlayersInput.text))
         {
             int maxPlayers = int.Parse(maxPlayersInput.text);
-            if (maxPlayers > 0)
+            if (maxPlayers > 1)
             {
                 createLobbyButton.interactable = false;
                 toggleCreateButton.interactable = false;

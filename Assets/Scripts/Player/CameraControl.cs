@@ -20,9 +20,12 @@ public class CameraControl : MonoBehaviour
 
     private float yaw;
     private float pitch;
+    private float lastYaw;
 
     [SerializeField] private float sensitivity = 5f;
     [SerializeField] private float zoomRate;
+
+    private Vector3 lastParentUp;
 
     private void Start()
     {
@@ -54,6 +57,11 @@ public class CameraControl : MonoBehaviour
             yaw += look.x * sensitivity;
             pitch -= look.y * sensitivity;
 
+            // Offsetting pitch of parent. Dont need to do this for yaw since we directly rotate the parent for yaw
+            float pitchDelta = Vector3.SignedAngle(transform.parent.up, lastParentUp, transform.right);
+            pitch += pitchDelta;
+            currentRotation.x += pitchDelta; // Ignore smoothing when offsetting pitch
+
             // Zoom with scroll
             float scroll = PlayerControl.Instance.inputActions.Player.Scroll.ReadValue<float>();
             if (scroll > 0)
@@ -73,25 +81,28 @@ public class CameraControl : MonoBehaviour
                 Cursor.lockState = CursorLockMode.Locked;
                 reticle.position = new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 0);
                 pitch = Mathf.Clamp(pitch, pitchMinMax1stPerson.x, pitchMinMax1stPerson.y);
+                currentRotation.x = Mathf.Clamp(currentRotation.x, pitchMinMax1stPerson.x, pitchMinMax1stPerson.y);
             }
             else
             {
                 Cursor.lockState = CursorLockMode.Confined;
                 reticle.position = PlayerControl.Instance.inputActions.UI.Point.ReadValue<Vector2>();
                 pitch = Mathf.Clamp(pitch, pitchMinMax3rdPerson.x, pitchMinMax3rdPerson.y);
+                currentRotation.x = Mathf.Clamp(currentRotation.x, pitchMinMax3rdPerson.x, pitchMinMax3rdPerson.y);
             }
 
             // Apply pitch and yaw
             if (cameraSmoothing)
             {
-                currentRotation = Vector3.SmoothDamp(currentRotation, new Vector3(pitch, yaw), ref rotationSmoothVelocity, rotationSmoothing);
+                currentRotation = Vector3.SmoothDamp(currentRotation, new Vector3(pitch, yaw, 0f), ref rotationSmoothVelocity, rotationSmoothing);
             }
             else
             {
-                currentRotation = new Vector3(pitch, yaw, currentRotation.z);
+                currentRotation = new Vector3(pitch, yaw, 0f);
             }
-            // Setting rotation and position of camera on previous params and target and dstFromTarget
-            transform.localEulerAngles = currentRotation;
+            transform.localEulerAngles = new Vector3(currentRotation.x, 0f, 0f);
+            transform.parent.Rotate(transform.parent.up, currentRotation.y - lastYaw, Space.World);
+            lastYaw = currentRotation.y;
         }
 
         // Prevent clipping of camera
@@ -103,5 +114,7 @@ public class CameraControl : MonoBehaviour
         {
             transform.position = target.position - transform.forward * dstFromTarget;
         }
+
+        lastParentUp = transform.parent.up;
     }
 }
