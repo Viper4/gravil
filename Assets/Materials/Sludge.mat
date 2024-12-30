@@ -93,8 +93,8 @@ Material:
     - _ClearCoatSmoothness: 0
     - _Cull: 2
     - _Cutoff: 0.5
-    - _DepthDistance: 0.5
-    - _DepthStrength: 0.025
+    - _DepthDistance: 1
+    - _DepthStrength: 0.05
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
     - _DisplacementStrength: 0.1
@@ -104,24 +104,26 @@ Material:
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
-    - _IORMedium: 0.72
-    - _IORSource: 1.003
+    - _IORMedium: 0.68
+    - _IORSource: 3.4
     - _IOR_Add: 0.25
     - _MainDensity: 5
     - _Metallic: 0
-    - _NormalStrength: 0.5
+    - _NormalStrength: 1
     - _OcclusionStrength: 1
     - _Parallax: 0.005
     - _QueueControl: 0
     - _QueueOffset: 0
     - _ReceiveShadows: 1
     - _SecondDensity: 5
+    - _Seed: 45
     - _Smoothness: 0.85
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
     - _Surface: 0
+    - _VoronoiAngleSeed: 0
     - _VoronoiAngleSpeed: 0.5
     - _VoronoiPower: 1
     - _WorkflowMode: 1

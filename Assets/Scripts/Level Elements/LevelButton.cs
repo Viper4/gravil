@@ -60,7 +60,7 @@ public class LevelButton : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!other.isTrigger && other.TryGetComponent<ButtonInteractable>(out var otherInteractable) && otherInteractable.canInteract)
+        if (!other.isTrigger && other.TryGetComponent<Interactable>(out var otherInteractable) && otherInteractable.canInteract)
         {
             AddObject(otherInteractable);
         }
@@ -68,13 +68,13 @@ public class LevelButton : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
-        if (!other.isTrigger && other.TryGetComponent<ButtonInteractable>(out var otherInteractable) && otherInteractable.canInteract)
+        if (!other.isTrigger && other.TryGetComponent<Interactable>(out var otherInteractable) && otherInteractable.canInteract)
         {
             RemoveObject(otherInteractable);
         }
     }
 
-    public void AddObject(ButtonInteractable interactable)
+    public void AddObject(Interactable interactable)
     {
         interactable.interactedButton = this;
         if (objectsOnButton == 0)
@@ -84,7 +84,7 @@ public class LevelButton : MonoBehaviour
         objectsOnButton++;
     }
 
-    public void RemoveObject(ButtonInteractable interactable)
+    public void RemoveObject(Interactable interactable)
     {
         interactable.interactedButton = null;
         objectsOnButton--;

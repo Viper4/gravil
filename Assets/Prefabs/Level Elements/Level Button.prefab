@@ -67,7 +67,7 @@ GameObject:
   - component: {fileID: 3442120149342490707}
   m_Layer: 0
   m_Name: Moving Part
-  m_TagString: MetalV2
+  m_TagString: MetalV1
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

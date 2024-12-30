@@ -134,6 +134,15 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""LoadNextLevel"",
+                    ""type"": ""Button"",
+                    ""id"": ""204cec2b-65c3-4c03-918c-ce2a5c7d1198"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -528,7 +537,7 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""path"": ""<Mouse>/scroll/y"",
                     ""interactions"": """",
                     ""processors"": """",
-                    ""groups"": """",
+                    ""groups"": "";Keyboard&Mouse"",
                     ""action"": ""Scroll"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
@@ -539,7 +548,7 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""path"": ""<Keyboard>/q"",
                     ""interactions"": """",
                     ""processors"": """",
-                    ""groups"": """",
+                    ""groups"": "";Keyboard&Mouse"",
                     ""action"": ""Gravity"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
@@ -550,8 +559,19 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""path"": ""<Keyboard>/r"",
                     ""interactions"": """",
                     ""processors"": """",
-                    ""groups"": """",
+                    ""groups"": "";Keyboard&Mouse"",
                     ""action"": ""Reset"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""3f4fc823-d516-4a2d-b41a-40b803468c6b"",
+                    ""path"": ""<Keyboard>/l"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""LoadNextLevel"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -1191,6 +1211,7 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         m_Player_Scroll = m_Player.FindAction("Scroll", throwIfNotFound: true);
         m_Player_Gravity = m_Player.FindAction("Gravity", throwIfNotFound: true);
         m_Player_Reset = m_Player.FindAction("Reset", throwIfNotFound: true);
+        m_Player_LoadNextLevel = m_Player.FindAction("LoadNextLevel", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_Navigate = m_UI.FindAction("Navigate", throwIfNotFound: true);
@@ -1284,6 +1305,7 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Scroll;
     private readonly InputAction m_Player_Gravity;
     private readonly InputAction m_Player_Reset;
+    private readonly InputAction m_Player_LoadNextLevel;
     public struct PlayerActions
     {
         private @InputActions m_Wrapper;
@@ -1300,6 +1322,7 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         public InputAction @Scroll => m_Wrapper.m_Player_Scroll;
         public InputAction @Gravity => m_Wrapper.m_Player_Gravity;
         public InputAction @Reset => m_Wrapper.m_Player_Reset;
+        public InputAction @LoadNextLevel => m_Wrapper.m_Player_LoadNextLevel;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -1345,6 +1368,9 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
             @Reset.started += instance.OnReset;
             @Reset.performed += instance.OnReset;
             @Reset.canceled += instance.OnReset;
+            @LoadNextLevel.started += instance.OnLoadNextLevel;
+            @LoadNextLevel.performed += instance.OnLoadNextLevel;
+            @LoadNextLevel.canceled += instance.OnLoadNextLevel;
         }
 
         private void UnregisterCallbacks(IPlayerActions instance)
@@ -1385,6 +1411,9 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
             @Reset.started -= instance.OnReset;
             @Reset.performed -= instance.OnReset;
             @Reset.canceled -= instance.OnReset;
+            @LoadNextLevel.started -= instance.OnLoadNextLevel;
+            @LoadNextLevel.performed -= instance.OnLoadNextLevel;
+            @LoadNextLevel.canceled -= instance.OnLoadNextLevel;
         }
 
         public void RemoveCallbacks(IPlayerActions instance)
@@ -1595,6 +1624,7 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         void OnScroll(InputAction.CallbackContext context);
         void OnGravity(InputAction.CallbackContext context);
         void OnReset(InputAction.CallbackContext context);
+        void OnLoadNextLevel(InputAction.CallbackContext context);
     }
     public interface IUIActions
     {

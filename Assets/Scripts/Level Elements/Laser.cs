@@ -21,7 +21,7 @@ public class Laser : MonoBehaviour
     {
         if (emitting)
         {
-            if (Physics.Raycast(laserPivot.position, laserPivot.up, out RaycastHit hit, 100f, ~ignoreLayers))
+            if (Physics.Raycast(laserPivot.position, laserPivot.up, out RaycastHit hit, 100f, ~ignoreLayers, QueryTriggerInteraction.Ignore))
             {
                 laserLength = hit.distance;
             }

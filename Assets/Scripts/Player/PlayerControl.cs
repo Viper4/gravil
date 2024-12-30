@@ -25,7 +25,7 @@ public class PlayerControl : NetworkBehaviour
     [SerializeField] private float leanSpeed = 10f;
 
     public Transform playerModel;
-    public ButtonInteractable buttonInteractable;
+    public Interactable buttonInteractable;
 
     [SerializeField] private GameObject[] localOwnedObjects;
 
@@ -57,6 +57,8 @@ public class PlayerControl : NetworkBehaviour
     public bool canRespawn = true;
     public Action OnDeath;
     public Action OnRespawn;
+
+    [SerializeField] private bool cheatsEnabled = false;
 
     private void OnEnable()
     {
@@ -183,6 +185,14 @@ public class PlayerControl : NetworkBehaviour
         playerModel.localEulerAngles = new Vector3(playerModel.localEulerAngles.x, Camera.main.transform.localEulerAngles.y, playerModel.localEulerAngles.z);
         Vector3 lean = new Vector3(moveInput.y * maxLeanAngle, Camera.main.transform.localEulerAngles.y, -moveInput.x * maxLeanAngle);
         playerModel.localRotation = Quaternion.RotateTowards(playerModel.localRotation, Quaternion.Euler(lean), leanSpeed * Time.deltaTime);
+
+        if (cheatsEnabled)
+        {
+            if (inputActions.Player.LoadNextLevel.triggered)
+            {
+                LobbyManager.Instance.LoadNextLevel();
+            }
+        }
     }
 
     private void FixedUpdate()
@@ -344,7 +354,7 @@ public class PlayerControl : NetworkBehaviour
     {
         attachedRigidbody.isKinematic = true;
         playerModel.gameObject.SetActive(false);
-        ParticleSystem dieParticles = Instantiate(dieEffectPrefab, transform.position, transform.rotation).GetComponent<ParticleSystem>();
+        ParticleSystem dieParticles = Instantiate(dieEffectPrefab, transform.position, Quaternion.LookRotation(-gravity.direction)).GetComponent<ParticleSystem>();
         ParticleSystem.ForceOverLifetimeModule forceOverLifetime = dieParticles.forceOverLifetime;
         forceOverLifetime.x = gravity.direction.x * gravity.acceleration;
         forceOverLifetime.y = gravity.direction.y * gravity.acceleration;

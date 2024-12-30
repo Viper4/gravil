@@ -819,9 +819,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aaef6d04c175dc240afcaee43887b9c2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  attachedRB: {fileID: 0}
+  attachedRigidbody: {fileID: 0}
   acceleration: 9.81
   direction: {x: -1, y: 0, z: 0}
+  terminalVelocity: 53
 --- !u!1 &179703770
 GameObject:
   m_ObjectHideFlags: 0
@@ -1050,9 +1051,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aaef6d04c175dc240afcaee43887b9c2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  attachedRB: {fileID: 0}
+  attachedRigidbody: {fileID: 0}
   acceleration: 9.81
   direction: {x: 0, y: 0, z: 1}
+  terminalVelocity: 53
 --- !u!1 &195798435
 GameObject:
   m_ObjectHideFlags: 0
@@ -7378,9 +7380,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aaef6d04c175dc240afcaee43887b9c2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  attachedRB: {fileID: 0}
+  attachedRigidbody: {fileID: 0}
   acceleration: 9.81
   direction: {x: 0, y: 1, z: 0}
+  terminalVelocity: 53
 --- !u!1 &1066260266
 GameObject:
   m_ObjectHideFlags: 0
@@ -12709,9 +12712,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aaef6d04c175dc240afcaee43887b9c2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  attachedRB: {fileID: 0}
+  attachedRigidbody: {fileID: 0}
   acceleration: 9.81
   direction: {x: 0, y: 0, z: -1}
+  terminalVelocity: 53
 --- !u!1 &1793906075
 GameObject:
   m_ObjectHideFlags: 0
@@ -13911,9 +13915,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aaef6d04c175dc240afcaee43887b9c2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  attachedRB: {fileID: 0}
+  attachedRigidbody: {fileID: 0}
   acceleration: 9.81
   direction: {x: 0, y: -1, z: 0}
+  terminalVelocity: 53
 --- !u!1 &1912438402
 GameObject:
   m_ObjectHideFlags: 0
@@ -15604,9 +15609,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aaef6d04c175dc240afcaee43887b9c2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  attachedRB: {fileID: 0}
+  attachedRigidbody: {fileID: 0}
   acceleration: 9.81
   direction: {x: 1, y: 0, z: 0}
+  terminalVelocity: 53
 --- !u!223 &1734635601355123844
 Canvas:
   m_ObjectHideFlags: 0

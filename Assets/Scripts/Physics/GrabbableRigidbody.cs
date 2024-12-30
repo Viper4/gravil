@@ -6,7 +6,7 @@ public class GrabbableRigidbody : NetworkBehaviour
 {
     private NetworkRigidbodyTransfer networkRigidbodyTransfer;
     private Collider _collider;
-    private ButtonInteractable buttonInteractable;
+    private Interactable buttonInteractable;
 
     private bool ownerInTrigger;
     [SerializeField] private NetworkVariable<bool> isGrabbed = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
@@ -38,7 +38,7 @@ public class GrabbableRigidbody : NetworkBehaviour
     {
         networkRigidbodyTransfer = GetComponent<NetworkRigidbodyTransfer>();
         _collider = GetComponent<Collider>();
-        buttonInteractable = GetComponent<ButtonInteractable>();
+        buttonInteractable = GetComponent<Interactable>();
         extents = _collider.bounds.extents.z;
         originalLayer = gameObject.layer;
     }
@@ -49,8 +49,7 @@ public class GrabbableRigidbody : NetworkBehaviour
         {
             if (setColliderEnabled)
                 _collider.enabled = false;
-            highlight.SetActive(false);
-            popup.SetActive(false);
+            ToggleUI(false);
             networkRigidbodyTransfer.Rigidbody.isKinematic = true;
             gameObject.layer = grabbedLayer;
 
@@ -79,8 +78,7 @@ public class GrabbableRigidbody : NetworkBehaviour
 
             if (ownerInTrigger && PlayerControl.Instance.hoveredObject == transform && !PlayerControl.Instance.isDead)
             {
-                highlight.SetActive(true);
-                popup.SetActive(true);
+                ToggleUI(true);
                 if (PlayerControl.Instance.inputActions.Player.Interact.triggered)
                 {
                     Grab(PlayerControl.Instance.OwnerClientId);
@@ -88,8 +86,7 @@ public class GrabbableRigidbody : NetworkBehaviour
             }
             else
             {
-                highlight.SetActive(false);
-                popup.SetActive(false);
+                ToggleUI(false);
             }
         }
     }
@@ -112,8 +109,7 @@ public class GrabbableRigidbody : NetworkBehaviour
             if (other.attachedRigidbody.GetComponent<PlayerControl>().IsOwner)
             {
                 ownerInTrigger = false;
-                highlight.SetActive(false);
-                popup.SetActive(false);
+                ToggleUI(false);
             }
         }
     }
@@ -185,7 +181,7 @@ public class GrabbableRigidbody : NetworkBehaviour
         base.OnGainedOwnership();
         if(isGrabbed.Value)
         {
-            highlight.SetActive(false);
+            ToggleUI(false);
             networkRigidbodyTransfer.Rigidbody.isKinematic = true;
         }
         else
@@ -201,5 +197,11 @@ public class GrabbableRigidbody : NetworkBehaviour
             networkRigidbodyTransfer.Rigidbody.isKinematic = false;
             networkRigidbodyTransfer.Rigidbody.linearVelocity = PlayerControl.Instance.gravity.attachedRigidbody.linearVelocity;
         }
+    }
+
+    public void ToggleUI(bool value)
+    {
+        highlight.SetActive(value);
+        popup.SetActive(value);
     }
 }
