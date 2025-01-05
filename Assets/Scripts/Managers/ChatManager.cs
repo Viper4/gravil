@@ -60,12 +60,15 @@ public class ChatManager : MonoBehaviour
         options.MakeActiveChannelUponJoining = true;
         connectionUI.SetActive(true);
         await VivoxService.Instance.JoinGroupChannelAsync(channelName, ChatCapability.AudioOnly, options);
+        connectionUI.SetActive(false);
         currentChannelName = channelName;
-        foreach(VivoxParticipant participant in VivoxService.Instance.ActiveChannels[currentChannelName])
+        participants.Clear();
+        foreach (VivoxParticipant participant in VivoxService.Instance.ActiveChannels[currentChannelName])
         {
             if(participants.ContainsKey(participant.PlayerId))
                 continue;
             participants.Add(participant.PlayerId, participant);
+            OnUnmutePlayer?.Invoke(participant.PlayerId);
         }
     }
 
@@ -73,11 +76,11 @@ public class ChatManager : MonoBehaviour
     {
         await VivoxService.Instance.LeaveChannelAsync(currentChannelName);
         currentChannelName = null;
+        participants.Clear();
     }
 
     private void OnParticipantAddedToChannel(VivoxParticipant participant)
     {
-        connectionUI.SetActive(false);
         participants.Add(participant.PlayerId, participant);
     }
 

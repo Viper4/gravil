@@ -6,7 +6,7 @@ public class NetworkRigidbodyOwner : NetworkRigidbody
 {
     [SerializeField] private bool useTriggers = false;
 
-    private List<NetworkGravity> touchingObjects = new List<NetworkGravity>();
+    private List<NetworkRigidbody> touchingObjects = new List<NetworkRigidbody>();
 
     private void FixedUpdate()
     {
@@ -22,15 +22,7 @@ public class NetworkRigidbodyOwner : NetworkRigidbody
             }
             else
             {
-                // Check if we are going to collide with this object
-                Vector3 collisionDirection = touchingObjects[i].transform.position - transform.position;
-
-                float dot = Vector3.Dot(touchingObjects[i].direction, collisionDirection);
-                Debug.Log(name + " touching " + touchingObjects[i].name + ": " + dot);
-                if (dot < -0.05f)
-                {
-                    Rigidbody.AddForce(touchingObjects[i].attachedRigidbody.mass * touchingObjects[i].acceleration * touchingObjects[i].direction, ForceMode.Force);
-                }
+                
             }
         }
     }
@@ -40,12 +32,12 @@ public class NetworkRigidbodyOwner : NetworkRigidbody
         if (!IsOwner || otherRB == Rigidbody)
             return;
 
-        if (otherRB != null && otherRB.TryGetComponent(out NetworkGravity otherNetworkGravity))
+        if (otherRB != null && otherRB.TryGetComponent(out NetworkRigidbody otherNetworkRigidbody))
         {
             // Only add non owner objects so we dont double the force of the owner's objects
-            if (!otherNetworkGravity.IsOwner)
+            if (!otherNetworkRigidbody.IsOwner)
             {
-                touchingObjects.Add(otherNetworkGravity);
+                touchingObjects.Add(otherNetworkRigidbody);
             }
         }
     }
@@ -55,11 +47,11 @@ public class NetworkRigidbodyOwner : NetworkRigidbody
         if (!IsOwner || otherRB == Rigidbody)
             return;
 
-        if (otherRB != null && otherRB.TryGetComponent(out NetworkGravity otherNetworkGravity))
+        if (otherRB != null && otherRB.TryGetComponent(out NetworkRigidbody otherNetworkRigidbody))
         {
-            if (!otherNetworkGravity.IsOwner)
+            if (!otherNetworkRigidbody.IsOwner)
             {
-                touchingObjects.Remove(otherNetworkGravity);
+                touchingObjects.Remove(otherNetworkRigidbody);
             }
         }
     }

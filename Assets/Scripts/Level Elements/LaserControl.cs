@@ -13,7 +13,6 @@ public class LaserControl : NetworkBehaviour
     private bool started = false;
 
     [SerializeField] private float inactiveTime = 1f;
-    [SerializeField] private float scaleTime = 0.1f;
     [SerializeField] private float emittingTime = 3f;
     [SerializeField] private bool looping = true;
 
@@ -32,32 +31,18 @@ public class LaserControl : NetworkBehaviour
     {
         if (started && looping)
         {
-            if (timer > inactiveTime + emittingTime + scaleTime) // Reset loop
+            if (timer > inactiveTime + emittingTime) // Deactivate and reset
             {
-                timer = scaleTime;
-                if (IsServer)
-                {
-                    SetTimerClientRpc(scaleTime); // Synchronize timer
-                }
+                Deactivate();
+                ResetTimer();
             }
-            else if (timer > inactiveTime + emittingTime) // Deactivating laser
+            else if (timer > inactiveTime) // Laser is active
             {
-                for(int i = 0; i < lasers.Length; i++)
-                {
-                    lasers[i].Deactivate((timer - inactiveTime - emittingTime) / scaleTime);
-                }
-            }
-            else if (timer > inactiveTime) // Activating laser
-            {
-                emitting = true;
-                for (int i = 0; i < lasers.Length; i++)
-                {
-                    lasers[i].Activate((timer - inactiveTime) / scaleTime);
-                }
+                Activate();
             }
             else // Laser is inactive
             {
-                StopEmit();
+                Deactivate();
             }
             timer += Time.deltaTime;
         }
@@ -72,46 +57,44 @@ public class LaserControl : NetworkBehaviour
     {
         if (value)
         {
-            if (!emitting)
-            {
-                StartCoroutine(StartEmit());
-                emitting = true;
-            }
+            Activate();
         }
         else
         {
-            if (emitting)
-            {
-                StopEmit();
-                emitting = false;
-            }
+            Deactivate();
         }
     }
 
-    private void StopEmit()
+    private void Activate()
     {
         if (emitting)
+            return;
+
+        emitting = true;
+        for (int i = 0; i < lasers.Length; i++)
         {
-            StopAllCoroutines();
-            emitting = false;
-            for (int i = 0; i < lasers.Length; i++)
-            {
-                lasers[i].Deactivate(1f);
-            }
+            lasers[i].Activate();
         }
     }
 
-    private IEnumerator StartEmit()
+    private void ResetTimer()
     {
-        float emitTimer = 0;
-        while (emitTimer < scaleTime)
+        timer = 0f;
+        if (IsServer)
         {
-            for(int i = 0; i < lasers.Length; i++)
-            {
-                lasers[i].Activate(emitTimer / scaleTime);
-            }
-            yield return null;
-            emitTimer += Time.deltaTime;
+            SetTimerClientRpc(timer); // Synchronize timer
+        }
+    }
+
+    private void Deactivate()
+    {
+        if (!emitting)
+            return;
+
+        emitting = false;
+        for (int i = 0; i < lasers.Length; i++)
+        {
+            lasers[i].Deactivate();
         }
     }
 

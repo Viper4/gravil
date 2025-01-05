@@ -177,7 +177,7 @@ GameObject:
   - component: {fileID: 200672104408050619}
   - component: {fileID: 8089346388262168736}
   m_Layer: 0
-  m_Name: Level Button
+  m_Name: Weighted Button
   m_TagString: MetalV1
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

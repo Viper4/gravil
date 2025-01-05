@@ -7,6 +7,6 @@ public class GravityOffset : MonoBehaviour
 
     private void Update()
     {
-        transform.position = origin.position - PlayerControl.Instance.gravity.direction * offset;
+        transform.position = origin.position - PlayerControl.Instance.gravity.GetDirection() * offset;
     }
 }

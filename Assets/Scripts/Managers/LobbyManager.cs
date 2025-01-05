@@ -533,5 +533,7 @@ public class LobbyManager : MonoBehaviour
         NetworkManager.Singleton.Shutdown();
         yield return new WaitWhile(() => NetworkManager.Singleton.ShutdownInProgress);
         SceneLoader.Instance.LoadScene("Main Menu");
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
     }
 }

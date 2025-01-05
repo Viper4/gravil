@@ -4,17 +4,31 @@ using UnityEngine;
 
 public class NetworkRigidbodyTransfer : NetworkRigidbody
 {
-    public bool canChangeOwnership = true;
+    public bool CanChangeOwnership { get; set; } = true;
 
     public void ChangeOwnership(ulong clientId)
     {
-        if (!IsServer || NetworkObject.IsOwnershipLocked || !canChangeOwnership)
+        if (NetworkObject.IsOwnershipLocked || !CanChangeOwnership)
             return;
 
         if (clientId != OwnerClientId)
         {
-            NetworkObject.ChangeOwnership(clientId);
+            if (IsServer)
+            {
+                NetworkObject.ChangeOwnership(clientId);
+            }
+            else
+            {
+                ChangeOwnershipServerRpc(clientId);
+            }
         }
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void ChangeOwnershipServerRpc(ulong clientId) 
+    {
+        Debug.Log("ChangeOwnershipServerRpc");
+        NetworkObject.ChangeOwnership(clientId);
     }
 
     private void OnCollisionEnter(Collision collision)

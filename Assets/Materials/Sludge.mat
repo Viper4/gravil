@@ -16,7 +16,7 @@ Material:
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
+  m_CustomRenderQueue: 3000
   stringTagMap: {}
   disabledShaderPasses:
   - MOTIONVECTORS
@@ -93,21 +93,21 @@ Material:
     - _ClearCoatSmoothness: 0
     - _Cull: 2
     - _Cutoff: 0.5
-    - _DepthDistance: 1
-    - _DepthStrength: 0.05
+    - _DepthDistance: 0
+    - _DepthStrength: 0
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
-    - _DisplacementStrength: 0.1
+    - _DisplacementStrength: 1
     - _DstBlend: 0
     - _DstBlendAlpha: 0
     - _EnvironmentReflections: 1
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
-    - _IORMedium: 0.68
-    - _IORSource: 3.4
-    - _IOR_Add: 0.25
-    - _MainDensity: 5
+    - _IORMedium: 1.33
+    - _IORSource: 1.003
+    - _IOR_Add: 1
+    - _MainDensity: 0.5
     - _Metallic: 0
     - _NormalStrength: 1
     - _OcclusionStrength: 1
@@ -115,7 +115,7 @@ Material:
     - _QueueControl: 0
     - _QueueOffset: 0
     - _ReceiveShadows: 1
-    - _SecondDensity: 5
+    - _SecondDensity: 0.5
     - _Seed: 45
     - _Smoothness: 0.85
     - _SmoothnessTextureChannel: 0
@@ -133,9 +133,9 @@ Material:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _DeepColor: {r: 0, g: 0.554717, b: 0, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _MainScrollSpeed: {r: 0, g: 0.1, b: 0, a: 0}
+    - _MainScrollSpeed: {r: 0, g: 1, b: 0, a: 0}
     - _MainTiling: {r: 1, g: 1, b: 0, a: 0}
-    - _SecondScrollSpeed: {r: 0, g: -0.1, b: 0, a: 0}
+    - _SecondScrollSpeed: {r: 0, g: -1, b: 0, a: 0}
     - _SecondTiling: {r: 1, g: 1, b: 0, a: 0}
     - _ShallowColor: {r: 0, g: 1, b: 0, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}

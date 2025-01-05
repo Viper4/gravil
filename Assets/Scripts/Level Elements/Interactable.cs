@@ -16,7 +16,7 @@ public class Interactable : MonoBehaviour
     [SerializeField] private float respawnDelay = 1.0f;
     [SerializeField] private float dissolveScale = 25f;
 
-    [HideInInspector] public LevelButton interactedButton;
+    [HideInInspector] public WeightedButton interactedButton;
 
     public bool isDissolving { get; private set; }
 
@@ -55,13 +55,14 @@ public class Interactable : MonoBehaviour
 
         if (grabbableRigidbody != null)
         {
-            grabbableRigidbody.ToggleUI(value);
+            grabbableRigidbody.popup.Hide();
             grabbableRigidbody.enabled = value;
         }
     }
 
     public void Respawn()
     {
+        ForceRemoveInteract();
         isDissolving = false;
         ToggleActive(true);
 
@@ -80,6 +81,17 @@ public class Interactable : MonoBehaviour
 
         isDissolving = true;
         ForceRemoveInteract();
+        if(grabbableRigidbody != null)
+        {
+            if (grabbableRigidbody.IsServer)
+            {
+                transform.SetParent(null);
+            }
+            else
+            {
+                grabbableRigidbody.SetParentNullServerRpc();
+            }
+        }
 
         if (dissolveEffectPrefab != null)
         {
@@ -109,7 +121,8 @@ public class Interactable : MonoBehaviour
         {
             ToggleActive(false);
 
-            Invoke(nameof(Respawn), respawnDelay);
+            if(respawnDelay >= 0)
+                Invoke(nameof(Respawn), respawnDelay);
         }
         else
         {

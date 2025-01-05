@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using System.Collections.Generic;
 
-public class LevelButton : MonoBehaviour
+public class WeightedButton : MonoBehaviour
 {
     [SerializeField] private Transform movingPart;
     [SerializeField] private BoxCollider triggerCollider;

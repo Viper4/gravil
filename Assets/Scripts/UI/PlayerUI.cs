@@ -10,7 +10,7 @@ using Unity.VisualScripting;
 
 public class PlayerUI : MonoBehaviour
 {
-    [SerializeField] private GameObject reticlePanel;
+    [SerializeField] private GameObject reticle;
 
     [SerializeField, Header("Player Settings")] private TMP_InputField playerNameInput;
     [SerializeField] private Button nameColorButton;
@@ -104,12 +104,12 @@ public class PlayerUI : MonoBehaviour
     {
         if (PlayerControl.Instance != null && PlayerControl.Instance.inputActions.UI.Menu.triggered)
         {
-            reticlePanel.SetActive(!PlayerControl.Instance.paused);
-            inLobbyPanel.SetActive(PlayerControl.Instance.paused);
-            playerSettingsPanel.SetActive(PlayerControl.Instance.paused);
+            reticle.SetActive(!PlayerControl.Instance.IsPaused);
+            inLobbyPanel.SetActive(PlayerControl.Instance.IsPaused);
+            playerSettingsPanel.SetActive(PlayerControl.Instance.IsPaused);
             if(LobbyManager.Instance.hostLobby != null)
             {
-                lobbySettingsPanel.SetActive(PlayerControl.Instance.paused);
+                lobbySettingsPanel.SetActive(PlayerControl.Instance.IsPaused);
             }
         }
     }

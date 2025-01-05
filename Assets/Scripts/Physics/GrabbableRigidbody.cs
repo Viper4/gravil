@@ -1,20 +1,22 @@
+using Unity.Collections;
 using Unity.Netcode;
+using Unity.VisualScripting;
 using UnityEngine;
+using WebSocketSharp;
 
-[RequireComponent(typeof(NetworkRigidbodyTransfer))]
 public class GrabbableRigidbody : NetworkBehaviour
 {
     private NetworkRigidbodyTransfer networkRigidbodyTransfer;
+    private Rigidbody attachedRigidbody;
     private Collider _collider;
-    private Interactable buttonInteractable;
+    private Interactable interactable;
 
     private bool ownerInTrigger;
     [SerializeField] private NetworkVariable<bool> isGrabbed = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     [SerializeField] private float grabDistance = 0.5f;
 
-    [SerializeField] private GameObject highlight;
-    [SerializeField] private GameObject popup;
+    public Popup popup;
 
     [SerializeField] private LayerMask solidLayers;
 
@@ -23,6 +25,8 @@ public class GrabbableRigidbody : NetworkBehaviour
     [SerializeField] private bool setColliderEnabled = true;
     private int originalLayer;
     [SerializeField] private int grabbedLayer = 2;
+
+    private NetworkVariable<FixedString64Bytes> grabbedPlayerId = new NetworkVariable<FixedString64Bytes>(string.Empty, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     private void OnEnable()
     {
@@ -37,8 +41,9 @@ public class GrabbableRigidbody : NetworkBehaviour
     private void Start()
     {
         networkRigidbodyTransfer = GetComponent<NetworkRigidbodyTransfer>();
+        attachedRigidbody = GetComponent<Rigidbody>();
         _collider = GetComponent<Collider>();
-        buttonInteractable = GetComponent<Interactable>();
+        interactable = GetComponent<Interactable>();
         extents = _collider.bounds.extents.z;
         originalLayer = gameObject.layer;
     }
@@ -47,46 +52,60 @@ public class GrabbableRigidbody : NetworkBehaviour
     {
         if (isGrabbed.Value)
         {
-            if (setColliderEnabled)
-                _collider.enabled = false;
-            ToggleUI(false);
-            networkRigidbodyTransfer.Rigidbody.isKinematic = true;
-            gameObject.layer = grabbedLayer;
-
-            if (IsOwner)
+            if (gameObject.layer != grabbedLayer)
             {
-                if (Physics.Raycast(PlayerControl.Instance.playerModel.position, PlayerControl.Instance.playerModel.forward, out RaycastHit hit, grabDistance + extents, solidLayers))
+                if (setColliderEnabled)
+                    _collider.enabled = false;
+                popup.Hide();
+                attachedRigidbody.isKinematic = true;
+                gameObject.layer = grabbedLayer;
+            }
+            
+            if (grabbedPlayerId.Value.Length > 0)
+            {
+                string grabberId = grabbedPlayerId.Value.ToString();
+                if (IsOwner)
                 {
-                    transform.position = hit.point + (hit.normal * extents);
+                    PlayerControl player = GameManager.Instance.players[grabberId];
+                    if (Physics.Raycast(player.playerModel.position, player.playerModel.forward, out RaycastHit hit, grabDistance + extents, solidLayers))
+                    {
+                        transform.position = hit.point + (hit.normal * extents);
+                    }
+                    else
+                    {
+                        transform.position = player.playerModel.position + player.playerModel.forward * grabDistance;
+                    }
                 }
-                else
+                
+                if (PlayerControl.Instance.playerId == grabberId)
                 {
-                    transform.position = PlayerControl.Instance.playerModel.position + PlayerControl.Instance.playerModel.forward * grabDistance;
-                }
-
-                if (PlayerControl.Instance.inputActions.Player.Interact.triggered || PlayerControl.Instance.isDead)
-                {
-                    Release();
+                    if (PlayerControl.Instance.inputActions.Player.Interact.triggered || PlayerControl.Instance.isDead)
+                    {
+                        Release();
+                    }
                 }
             }
         }
         else
         {
-            if (setColliderEnabled)
-                _collider.enabled = true;
-            gameObject.layer = originalLayer;
-
-            if (ownerInTrigger && PlayerControl.Instance.hoveredObject == transform && !PlayerControl.Instance.isDead)
+            if(gameObject.layer != originalLayer)
             {
-                ToggleUI(true);
+                if (setColliderEnabled)
+                    _collider.enabled = true;
+                gameObject.layer = originalLayer;
+            }
+
+            if (ownerInTrigger && PlayerControl.Instance.HoveredObject == transform && !PlayerControl.Instance.isDead)
+            {
+                popup.Show("'E' to grab");
                 if (PlayerControl.Instance.inputActions.Player.Interact.triggered)
                 {
-                    Grab(PlayerControl.Instance.OwnerClientId);
+                    Grab(PlayerControl.Instance.playerId);
                 }
             }
             else
             {
-                ToggleUI(false);
+                popup.Hide();
             }
         }
     }
@@ -109,41 +128,56 @@ public class GrabbableRigidbody : NetworkBehaviour
             if (other.attachedRigidbody.GetComponent<PlayerControl>().IsOwner)
             {
                 ownerInTrigger = false;
-                ToggleUI(false);
+                popup.Hide();
             }
         }
     }
 
-    public void Grab(ulong clientId)
+    [ServerRpc(RequireOwnership = false)]
+    private void SetGrabServerRpc(bool isGrabbed, string playerId)
     {
-        if (buttonInteractable != null)
+        this.isGrabbed.Value = isGrabbed;
+        grabbedPlayerId.Value = playerId;
+    }
+
+    public void Grab(string playerId)
+    {
+        if (interactable != null)
         {
-            buttonInteractable.ForceRemoveInteract();
+            interactable.ForceRemoveInteract();
         }
+        if (networkRigidbodyTransfer != null)
+        {
+            Debug.Log(GameManager.Instance.players[playerId].OwnerClientId);
+            networkRigidbodyTransfer.ChangeOwnership(GameManager.Instance.players[playerId].OwnerClientId);
+            // Set grab after ownership transfers
+        }
+
         if (IsServer)
         {
-            if (networkRigidbodyTransfer != null)
-            {
-                networkRigidbodyTransfer.ChangeOwnership(clientId);
-                networkRigidbodyTransfer.canChangeOwnership = false;
-            }
             isGrabbed.Value = true;
+            grabbedPlayerId.Value = playerId;
         }
         else
         {
-            GrabServerRpc(clientId);
+            SetGrabServerRpc(true, playerId);
         }
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void ReleaseServerRpc()
+    {
+        isGrabbed.Value = false;
+        grabbedPlayerId.Value = string.Empty;
     }
 
     public void Release()
     {
+        Debug.Log("Release");
         if (IsServer)
         {
-            if (networkRigidbodyTransfer != null)
-            {
-                networkRigidbodyTransfer.canChangeOwnership = true;
-            }
             isGrabbed.Value = false;
+            grabbedPlayerId.Value = string.Empty;
         }
         else
         {
@@ -152,56 +186,17 @@ public class GrabbableRigidbody : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership = false)]
-    private void GrabServerRpc(ulong clientId)
+    public void SetParentNullServerRpc()
     {
-        if (buttonInteractable != null)
-        {
-            buttonInteractable.ForceRemoveInteract();
-        }
-        if (networkRigidbodyTransfer != null)
-        {
-            networkRigidbodyTransfer.ChangeOwnership(clientId);
-            networkRigidbodyTransfer.canChangeOwnership = false;
-        }
-        isGrabbed.Value = true;
-    }
-
-    [ServerRpc(RequireOwnership = false)]
-    private void ReleaseServerRpc()
-    {
-        if (networkRigidbodyTransfer != null)
-        {
-            networkRigidbodyTransfer.canChangeOwnership = true;
-        }
-        isGrabbed.Value = false;
-    }
-
-    public override void OnGainedOwnership()
-    {
-        base.OnGainedOwnership();
-        if(isGrabbed.Value)
-        {
-            ToggleUI(false);
-            networkRigidbodyTransfer.Rigidbody.isKinematic = true;
-        }
-        else
-        {
-            networkRigidbodyTransfer.Rigidbody.isKinematic = false;
-        }
+        transform.SetParent(null);
     }
 
     private void OnIsGrabbedChanged(bool previousValue, bool newValue)
     {
         if (IsOwner && previousValue && !newValue)
         {
-            networkRigidbodyTransfer.Rigidbody.isKinematic = false;
-            networkRigidbodyTransfer.Rigidbody.linearVelocity = PlayerControl.Instance.gravity.attachedRigidbody.linearVelocity;
+            attachedRigidbody.isKinematic = false;
+            attachedRigidbody.linearVelocity = PlayerControl.Instance.Rigidbody.linearVelocity;
         }
-    }
-
-    public void ToggleUI(bool value)
-    {
-        highlight.SetActive(value);
-        popup.SetActive(value);
     }
 }

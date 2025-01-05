@@ -29,6 +29,7 @@ public class CameraControl : MonoBehaviour
 
     private void Start()
     {
+        Screen.fullScreenMode = FullScreenMode.Windowed;
         // If target is not set, automatically set it to the parent
         if (target == null)
         {
@@ -50,7 +51,7 @@ public class CameraControl : MonoBehaviour
                 Screen.fullScreenMode = FullScreenMode.Windowed;
             }
         }
-        if (!PlayerControl.Instance.paused)
+        if (!PlayerControl.Instance.IsPaused)
         {
             // Translating inputs from mouse into smoothed rotation of camera
             Vector2 look = PlayerControl.Instance.inputActions.Player.Look.ReadValue<Vector2>();

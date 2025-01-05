@@ -21,6 +21,7 @@ TagManager:
   - WaterV2
   - Wood
   - DeathZone
+  - GravityLock
   layers:
   - Default
   - TransparentFX

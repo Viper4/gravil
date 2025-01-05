@@ -143,6 +143,24 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""UpArrow"",
+                    ""type"": ""Button"",
+                    ""id"": ""147b18a5-93b6-48af-9008-988a298fd05e"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""DownArrow"",
+                    ""type"": ""Button"",
+                    ""id"": ""d135cd27-614e-4ac5-8eda-3003ba049901"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -180,31 +198,9 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": true
                 },
                 {
-                    ""name"": ""up"",
-                    ""id"": ""8180e8bd-4097-4f4e-ab88-4523101a6ce9"",
-                    ""path"": ""<Keyboard>/upArrow"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": "";Keyboard&Mouse"",
-                    ""action"": ""Move"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
                     ""name"": ""down"",
                     ""id"": ""320bffee-a40b-4347-ac70-c210eb8bc73a"",
                     ""path"": ""<Keyboard>/s"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": "";Keyboard&Mouse"",
-                    ""action"": ""Move"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
-                    ""name"": ""down"",
-                    ""id"": ""1c5327b5-f71c-4f60-99c7-4e737386f1d1"",
-                    ""path"": ""<Keyboard>/downArrow"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": "";Keyboard&Mouse"",
@@ -224,31 +220,9 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": true
                 },
                 {
-                    ""name"": ""left"",
-                    ""id"": ""2e46982e-44cc-431b-9f0b-c11910bf467a"",
-                    ""path"": ""<Keyboard>/leftArrow"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": "";Keyboard&Mouse"",
-                    ""action"": ""Move"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
                     ""name"": ""right"",
                     ""id"": ""fcfe95b8-67b9-4526-84b5-5d0bc98d6400"",
                     ""path"": ""<Keyboard>/d"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": "";Keyboard&Mouse"",
-                    ""action"": ""Move"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
-                    ""name"": ""right"",
-                    ""id"": ""77bff152-3580-4b21-b6de-dcd0c7e41164"",
-                    ""path"": ""<Keyboard>/rightArrow"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": "";Keyboard&Mouse"",
@@ -572,6 +546,28 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": "";Keyboard&Mouse"",
                     ""action"": ""LoadNextLevel"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""45a007cf-d30c-4c1f-8e37-1d24eb0f469f"",
+                    ""path"": ""<Keyboard>/upArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""UpArrow"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""fe4b9b40-06ec-4f86-a165-72a6c97ab124"",
+                    ""path"": ""<Keyboard>/downArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""DownArrow"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -1212,6 +1208,8 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         m_Player_Gravity = m_Player.FindAction("Gravity", throwIfNotFound: true);
         m_Player_Reset = m_Player.FindAction("Reset", throwIfNotFound: true);
         m_Player_LoadNextLevel = m_Player.FindAction("LoadNextLevel", throwIfNotFound: true);
+        m_Player_UpArrow = m_Player.FindAction("UpArrow", throwIfNotFound: true);
+        m_Player_DownArrow = m_Player.FindAction("DownArrow", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_Navigate = m_UI.FindAction("Navigate", throwIfNotFound: true);
@@ -1306,6 +1304,8 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Gravity;
     private readonly InputAction m_Player_Reset;
     private readonly InputAction m_Player_LoadNextLevel;
+    private readonly InputAction m_Player_UpArrow;
+    private readonly InputAction m_Player_DownArrow;
     public struct PlayerActions
     {
         private @InputActions m_Wrapper;
@@ -1323,6 +1323,8 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         public InputAction @Gravity => m_Wrapper.m_Player_Gravity;
         public InputAction @Reset => m_Wrapper.m_Player_Reset;
         public InputAction @LoadNextLevel => m_Wrapper.m_Player_LoadNextLevel;
+        public InputAction @UpArrow => m_Wrapper.m_Player_UpArrow;
+        public InputAction @DownArrow => m_Wrapper.m_Player_DownArrow;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -1371,6 +1373,12 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
             @LoadNextLevel.started += instance.OnLoadNextLevel;
             @LoadNextLevel.performed += instance.OnLoadNextLevel;
             @LoadNextLevel.canceled += instance.OnLoadNextLevel;
+            @UpArrow.started += instance.OnUpArrow;
+            @UpArrow.performed += instance.OnUpArrow;
+            @UpArrow.canceled += instance.OnUpArrow;
+            @DownArrow.started += instance.OnDownArrow;
+            @DownArrow.performed += instance.OnDownArrow;
+            @DownArrow.canceled += instance.OnDownArrow;
         }
 
         private void UnregisterCallbacks(IPlayerActions instance)
@@ -1414,6 +1422,12 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
             @LoadNextLevel.started -= instance.OnLoadNextLevel;
             @LoadNextLevel.performed -= instance.OnLoadNextLevel;
             @LoadNextLevel.canceled -= instance.OnLoadNextLevel;
+            @UpArrow.started -= instance.OnUpArrow;
+            @UpArrow.performed -= instance.OnUpArrow;
+            @UpArrow.canceled -= instance.OnUpArrow;
+            @DownArrow.started -= instance.OnDownArrow;
+            @DownArrow.performed -= instance.OnDownArrow;
+            @DownArrow.canceled -= instance.OnDownArrow;
         }
 
         public void RemoveCallbacks(IPlayerActions instance)
@@ -1625,6 +1639,8 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         void OnGravity(InputAction.CallbackContext context);
         void OnReset(InputAction.CallbackContext context);
         void OnLoadNextLevel(InputAction.CallbackContext context);
+        void OnUpArrow(InputAction.CallbackContext context);
+        void OnDownArrow(InputAction.CallbackContext context);
     }
     public interface IUIActions
     {

@@ -9,6 +9,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject networkManager;
 
     public Dictionary<ulong, NetworkObject> trackedNetworkObjects = new Dictionary<ulong, NetworkObject>();
+    public Dictionary<string, PlayerControl> players = new Dictionary<string, PlayerControl>();
 
     private void OnEnable()
     {

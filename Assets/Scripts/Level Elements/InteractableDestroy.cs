@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class InteractableDestroy : MonoBehaviour
 {
-    [SerializeField, ColorUsage(true, true)] private Color dissolveColor;
+    [SerializeField, ColorUsage(false, true)] private Color dissolveColor;
 
     private void OnTriggerEnter(Collider other)
     {

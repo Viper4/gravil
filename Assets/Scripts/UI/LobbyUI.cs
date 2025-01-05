@@ -24,7 +24,7 @@ public class LobbyUI : MonoBehaviour
     [SerializeField] private Button toggleCreateButton;
 
     [SerializeField, Header("Joining")] private TMP_InputField lobbyCodeInput;
-    [SerializeField] private Button joinLobbyButton;
+    [SerializeField] private Button joinLobbyByCodeButton;
     [SerializeField] private Button joinRandomLobbyButton;
     [SerializeField] private GameObject lobbyListPanel;
     [SerializeField] private Transform lobbyListParent;
@@ -76,7 +76,7 @@ public class LobbyUI : MonoBehaviour
         regionDropdown.onValueChanged.AddListener(ctx => LobbyManager.Instance.SetRegion(regions[ctx]));
 
         lobbyCodeInput.onValueChanged.AddListener(ctx => JoinInputFieldChanged());
-        joinLobbyButton.onClick.AddListener(JoinLobby);
+        joinLobbyByCodeButton.onClick.AddListener(JoinLobbyByCode);
         joinRandomLobbyButton.onClick.AddListener(JoinRandomLobby);
 
         LobbyManager.Instance.OnJoinLobby += ctx => OnJoinLobby();
@@ -197,7 +197,14 @@ public class LobbyUI : MonoBehaviour
         createLobbyButton.interactable = !string.IsNullOrEmpty(lobbyCodeInput.text);
     }
 
-    private void JoinLobby()
+    private void JoinLobbyById(string id)
+    {
+        loadingPanel.SetActive(true);
+        loadingText.text = "Joining lobby...";
+        LobbyManager.Instance.JoinLobbyById(id);
+    }
+
+    private void JoinLobbyByCode()
     {
         if (!string.IsNullOrEmpty(lobbyCodeInput.text))
         {
@@ -233,7 +240,7 @@ public class LobbyUI : MonoBehaviour
             lobbyListItem.Find("Name").GetComponent<TextMeshProUGUI>().text = lobby.Name;
             lobbyListItem.Find("Players").GetComponent<TextMeshProUGUI>().text = $"{lobby.Players.Count}/{lobby.MaxPlayers}";
             lobbyListItem.Find("Region").GetComponent<TextMeshProUGUI>().text = lobby.Data[LobbyManager.REGION_KEY].Value;
-            lobbyListItem.GetComponent<Button>().onClick.AddListener(() => { LobbyManager.Instance.JoinLobbyById(lobby.Id); });
+            lobbyListItem.GetComponent<Button>().onClick.AddListener(() => JoinLobbyById(lobby.Id));
         }
     }
 

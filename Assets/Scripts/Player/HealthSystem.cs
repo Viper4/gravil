@@ -1,6 +1,7 @@
 using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class HealthSystem : NetworkBehaviour
 {
@@ -10,35 +11,31 @@ public class HealthSystem : NetworkBehaviour
         X, Y, Z
     }
 
-    [SerializeField] private NetworkVariable<int> health = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
-    [SerializeField] private NetworkVariable<int> maxHealth = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    [SerializeField] private NetworkVariable<float> health = new NetworkVariable<float>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    [SerializeField] private NetworkVariable<float> maxHealth = new NetworkVariable<float>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
     [SerializeField] private Transform healthBarParent;
     [SerializeField] private Transform healthBar;
     [SerializeField] private Axis scaleAxis = Axis.X;
     private Vector3 maxHealthScale;
 
-    /*public struct CustomData : INetworkSerializable
-    {
-        public int health;
-        public int maxHealth;
-        public string test;
-        public FixedString128Bytes message;
+    [SerializeField] private Animator healthAnimator;
+    [SerializeField] private GameObject damageEffect;
+    [SerializeField] private UnityEvent OnDamage;
 
-        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
-        {
-            serializer.SerializeValue(ref health);
-            serializer.SerializeValue(ref maxHealth);
-            serializer.SerializeValue(ref test);
-        }
-    }*/
+    [SerializeField] private float minDamageSpeed = 16.0f;
+    [SerializeField] private float speedDamageMultiplier = 2.5f;
 
-    public override void OnNetworkSpawn()
+    [SerializeField] private UnityEvent OnDeath;
+
+    private void Start()
     {
         if (healthBar != null)
         {
             maxHealthScale = healthBar.localScale;
             UpdateHealthBar();
+            health.OnValueChanged += (prevVal, newVal) => UpdateHealthBar();
+            maxHealth.OnValueChanged += (prevVal, newVal) => UpdateHealthBar();
         }
     }
 
@@ -52,7 +49,7 @@ public class HealthSystem : NetworkBehaviour
 
     private void UpdateHealthBar()
     {
-        if(healthBar != null)
+        if (healthBar != null)
         {
             float healthPercent = health.Value / maxHealth.Value;
             switch (scaleAxis)
@@ -70,19 +67,53 @@ public class HealthSystem : NetworkBehaviour
         }
     }
 
-    public void Damage(int amount)
+    public void Damage(float amount)
     {
         if (!IsOwner)
             return;
+
         health.Value -= amount;
+        healthAnimator.SetTrigger("Damage");
+        OnDamage?.Invoke();
+        if (health.Value <= 0)
+        {
+            health.Value = 0;
+            OnDeath?.Invoke();
+        }
+        else if (damageEffect != null)
+        {
+            Destroy(Instantiate(damageEffect, transform.position, transform.rotation), 5f);
+        }
         UpdateHealthBar();
     }
 
-    public void Heal(int amount)
+    public void Heal(float amount)
     {
         if (!IsOwner)
             return;
+
         health.Value += amount;
+        UpdateHealthBar();
+        healthAnimator.SetTrigger("Heal");
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (!IsOwner)
+            return;
+        float collisionSpeed = collision.relativeVelocity.magnitude;
+        if(collisionSpeed >= minDamageSpeed)
+        {
+            Damage(collisionSpeed * speedDamageMultiplier);
+        }
+    }
+
+    public void ResetHealth()
+    {
+        if (!IsOwner)
+            return;
+
+        health.Value = maxHealth.Value;
         UpdateHealthBar();
     }
 }

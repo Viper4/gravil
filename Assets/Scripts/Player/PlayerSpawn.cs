@@ -34,11 +34,11 @@ public class PlayerSpawn : MonoBehaviour
     private void ResetPlayer()
     {
         PlayerControl.Instance.isGrounded = false;
-        PlayerControl.Instance.buttonInteractable.ForceRemoveInteract();
         if(defaultGravityDirection != Vector3.zero)
         {
             PlayerControl.Instance.gravity.SetDirection(defaultGravityDirection);
         }
         PlayerControl.Instance.transform.position = CustomRandom.GetPointInCollider(_collider);
+        PlayerControl.Instance.ResetPlayer();
     }
 }

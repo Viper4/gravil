@@ -7,51 +7,62 @@ public class Laser : MonoBehaviour
     [SerializeField] private bool emitting = false;
     [SerializeField] private Transform laserPivot;
     [SerializeField] private MeshRenderer laserRenderer;
+    [SerializeField, ColorUsage(false, true)] private Color laserColor;
 
-    [SerializeField] private Vector3 minScale;
-    [SerializeField] private Vector3 maxScale;
+    private Vector3 startScale;
     private float laserLength = 100f;
 
-    [SerializeField, ColorUsage(false, true)] private Color emittingColor;
-    [SerializeField, ColorUsage(false, true)] private Color inactiveColor;
-
     [SerializeField] private LayerMask ignoreLayers;
+    [SerializeField] private bool destroyInteractables = false;
+    [SerializeField, ColorUsage(false, true)] private Color dissolveColor;
+
+    private void Start()
+    {
+        laserRenderer.material.SetColor("_EmissionColor", laserColor);
+        startScale = laserPivot.localScale;
+        if (emitting)
+        {
+            Activate();
+        }
+        else
+        {
+            Deactivate();
+        }
+    }
 
     private void FixedUpdate()
     {
         if (emitting)
         {
-            if (Physics.Raycast(laserPivot.position, laserPivot.up, out RaycastHit hit, 100f, ~ignoreLayers, QueryTriggerInteraction.Ignore))
+            float radius = Mathf.Max(laserPivot.localScale.x, laserPivot.localScale.z) * Mathf.Max(laserRenderer.transform.localScale.x, laserRenderer.transform.localScale.z) * 0.5f;
+            if (Physics.SphereCast(laserPivot.position, radius, laserPivot.up, out RaycastHit hit, 100f, ~ignoreLayers, QueryTriggerInteraction.Ignore))
             {
-                laserLength = hit.distance;
+                laserLength = hit.distance + radius;
+                if (destroyInteractables)
+                {
+                    if (hit.transform.TryGetComponent<Interactable>(out var interactable) && interactable.destructible && !interactable.isDissolving)
+                    {
+                        interactable.Dissolve(dissolveColor);
+                    }
+                }
             }
             else
             {
                 laserLength = 100f;
             }
-            laserPivot.localScale = new Vector3(laserPivot.localScale.x, laserLength, laserPivot.localScale.z);
+            laserPivot.localScale = new Vector3(startScale.x, laserLength, startScale.z);
         }
     }
 
-    public void Activate(float t)
+    public void Activate()
     {
         emitting = true;
-        laserRenderer.material.SetColor("_EmissionColor", emittingColor);
-        laserPivot.localScale = Vector3.Lerp(minScale, maxScale, t);
-        laserPivot.localScale = new Vector3(laserPivot.localScale.x, laserLength, laserPivot.localScale.z);
+        laserPivot.localScale = new Vector3(startScale.x, laserLength, startScale.z);
     }
 
-    public void Deactivate(float t)
+    public void Deactivate()
     {
-        laserRenderer.material.SetColor("_EmissionColor", Color.Lerp(emittingColor, inactiveColor, t));
-        laserPivot.localScale = Vector3.Lerp(maxScale, minScale, t);
-        if (t < 1)
-        {
-            laserPivot.localScale = new Vector3(laserPivot.localScale.x, laserLength, laserPivot.localScale.z);
-        }
-        else
-        {
-            emitting = false;
-        }
+        emitting = false;
+        laserPivot.localScale = new Vector3(startScale.x, 0f, startScale.z);
     }
 }
