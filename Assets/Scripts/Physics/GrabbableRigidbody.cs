@@ -142,15 +142,14 @@ public class GrabbableRigidbody : NetworkBehaviour
 
     public void Grab(string playerId)
     {
+        PlayerControl.Instance.OnRespawn += Release;
         if (interactable != null)
         {
             interactable.ForceRemoveInteract();
         }
         if (networkRigidbodyTransfer != null)
         {
-            Debug.Log(GameManager.Instance.players[playerId].OwnerClientId);
             networkRigidbodyTransfer.ChangeOwnership(GameManager.Instance.players[playerId].OwnerClientId);
-            // Set grab after ownership transfers
         }
 
         if (IsServer)
@@ -173,7 +172,7 @@ public class GrabbableRigidbody : NetworkBehaviour
 
     public void Release()
     {
-        Debug.Log("Release");
+        PlayerControl.Instance.OnRespawn -= Release;
         if (IsServer)
         {
             isGrabbed.Value = false;

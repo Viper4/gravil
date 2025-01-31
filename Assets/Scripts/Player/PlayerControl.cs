@@ -11,7 +11,7 @@ public class PlayerControl : NetworkBehaviour
     public static PlayerControl Instance { get; private set; }
 
     public Rigidbody Rigidbody { get; private set; }
-    public NetworkGravity gravity;
+    public NetworkGravity networkGravity;
     private HealthSystem healthSystem;
     public Transform playerModel;
     private CapsuleCollider playerCapsule;
@@ -34,8 +34,6 @@ public class PlayerControl : NetworkBehaviour
     [SerializeField] private float leanSpeed = 10f;
     [SerializeField] private float gravityRotateSpeed = 125f;
 
-    [SerializeField] private LayerMask collisionLayers;
-    [SerializeField] private float obstacleDistance = 0.25f;
     [SerializeField] private LayerMask hoverLayers;
     public Transform HoveredObject { get; private set; }
 
@@ -77,7 +75,6 @@ public class PlayerControl : NetworkBehaviour
             if (Instance == null)
             {
                 Instance = this;
-                DontDestroyOnLoad(gameObject);
 
                 if (!IsServer)
                 {
@@ -89,9 +86,10 @@ public class PlayerControl : NetworkBehaviour
                 {
                     UpdatePlayer(LobbyManager.Instance.playerName, LobbyManager.Instance.playerNameColor, LobbyManager.Instance.playerColor, AuthenticationService.Instance.PlayerId);
                 }
+                GameManager.Instance.players.Clear();
                 GameManager.Instance.players.Add(AuthenticationService.Instance.PlayerId, this);
             }
-            else
+            else if (Instance != this)
             {
                 Destroy(gameObject);
             }
@@ -125,7 +123,7 @@ public class PlayerControl : NetworkBehaviour
 
     private void GetHover()
     {
-        if (isDead)
+        if (Camera.main == null || isDead)
             return;
 
         // Raycast to get what the player is hovering over
@@ -148,7 +146,7 @@ public class PlayerControl : NetworkBehaviour
         if (isDead)
             return;
 
-        Vector3 newGravityDirection = Vector3.zero;
+        Vector3 newDirection = Vector3.zero;
         Vector3 cameraForward = Camera.main.transform.forward;
 
         // Flattening camera forward vector to get a cardinal direction
@@ -156,31 +154,31 @@ public class PlayerControl : NetworkBehaviour
         {
             if (Mathf.Abs(cameraForward.x) > Mathf.Abs(cameraForward.z))
             {
-                newGravityDirection.x = cameraForward.x < 0 ? -1f : 1f;
+                newDirection.x = cameraForward.x < 0 ? -1f : 1f;
             }
             else
             {
-                newGravityDirection.z = cameraForward.z < 0 ? -1f : 1f;
+                newDirection.z = cameraForward.z < 0 ? -1f : 1f;
             }
         }
         else
         {
             if (Mathf.Abs(cameraForward.y) > Mathf.Abs(cameraForward.z))
             {
-                newGravityDirection.y = cameraForward.y < 0 ? -1f : 1f;
+                newDirection.y = cameraForward.y < 0 ? -1f : 1f;
             }
             else
             {
-                newGravityDirection.z = cameraForward.z < 0 ? -1f : 1f;
+                newDirection.z = cameraForward.z < 0 ? -1f : 1f;
             }
         }
 
-        gravity.SetDirection(newGravityDirection);
+        networkGravity.SetDirection(newDirection);
     }
 
     private void Update()
     {
-        if (!IsSpawned)
+        if (Camera.main == null || !IsSpawned)
             return;
 
         if (IsOwner)
@@ -202,8 +200,8 @@ public class PlayerControl : NetworkBehaviour
             }
         }
 
-        // Rotate player to align with gravity
-        Quaternion targetRotation = Quaternion.FromToRotation(transform.up, -gravity.GetDirection()) * transform.rotation;
+        // Rotate player to align with networkGravity
+        Quaternion targetRotation = Quaternion.FromToRotation(transform.up, -networkGravity.GetDirection()) * transform.rotation;
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, gravityRotateSpeed * Time.deltaTime);
 
         // Rotate player model to lean with movement
@@ -217,7 +215,7 @@ public class PlayerControl : NetworkBehaviour
         if (!IsSpawned || isDead)
             return;
 
-        Vector3 gravityDirection = gravity.GetDirection();
+        Vector3 gravityDirection = networkGravity.GetDirection();
         Vector3 moveDirection;
 
         if (!IsPaused)
@@ -225,27 +223,28 @@ public class PlayerControl : NetworkBehaviour
             if (IsOwner)
             {
                 Vector2 newMoveInput = inputActions.Player.Move.ReadValue<Vector2>();
-                /*moveDirection = transform.forward * newMoveInput.y + transform.right * newMoveInput.x;
-                Vector3 offset = moveDirection * obstacleDistance;
-                Vector3 start = playerModel.position - ((playerCapsule.height * 0.49f - playerCapsule.radius) * playerModel.up) + offset;
-                Vector3 end = playerModel.position + ((playerCapsule.height * 0.49f - playerCapsule.radius) * playerModel.up) + offset;
-                if (Physics.CheckCapsule(start, end, playerCapsule.radius, collisionLayers, QueryTriggerInteraction.Ignore))
-                {
-                    newMoveInput = Vector2.zero;
-                    Debug.DrawLine(start, end, Color.red, 0.1f);
-                }*/
 
                 if (moveInput == Vector2.zero && newMoveInput != Vector2.zero)
                 {
                     OnStartMove?.Invoke();
                 }
-                else if (newMoveInput == Vector2.zero && moveInput != Vector2.zero)
+                else if (moveInput != Vector2.zero && newMoveInput == Vector2.zero)
                 {
                     OnStopMove?.Invoke();
                 }
 
                 if (moveInput != newMoveInput)
                 {
+                    // Sometimes collision detection doesn't work
+                    if (!isGrounded && Physics.Raycast((transform.position + transform.up), -transform.up, out RaycastHit groundHit, 1.1f, networkGravity.gravity.collisionLayers, QueryTriggerInteraction.Ignore))
+                    {
+                        Debug.DrawLine(transform.position, transform.position - (transform.up * 0.1f), Color.red, 0.25f);
+
+                        ground = groundHit.collider.transform;
+                        isGrounded = true;
+                        OnGroundChanged?.Invoke(ground.tag);
+                    }
+
                     if (IsServer)
                     {
                         MoveClientRpc(newMoveInput);
@@ -297,7 +296,7 @@ public class PlayerControl : NetworkBehaviour
         if (!IsOwner)
             return;
 
-        if (Vector3.Angle(collision.GetContact(0).normal, -gravity.GetDirection()) < 45f)
+        if (Vector3.Angle(collision.GetContact(0).normal, -networkGravity.GetDirection()) < 45f)
         {
             if (IsServer)
             {
@@ -401,6 +400,8 @@ public class PlayerControl : NetworkBehaviour
 
     public void ResetPlayer()
     {
+        networkGravity.ForceUnlock();
+
         if (IsServer)
             transform.SetParent(null);
         interactable.ForceRemoveInteract();
@@ -414,7 +415,6 @@ public class PlayerControl : NetworkBehaviour
         {
             SyncPositionServerRpc(transform.position);
         }
-        gravity.ForceUnlock();
     }
 
     public void Die()
@@ -433,12 +433,15 @@ public class PlayerControl : NetworkBehaviour
 
     private void DieLocal()
     {
-        ResetPlayer();
-        isDead = true;
-        OnStopMove?.Invoke();
-        StartCoroutine(DeathAnimation());
-        OnDeath?.Invoke();
-        healthSystem.ResetHealth();
+        if (!isDead)
+        {
+            ResetPlayer();
+            isDead = true;
+            OnStopMove?.Invoke();
+            StartCoroutine(DeathAnimation());
+            OnDeath?.Invoke();
+            healthSystem.ResetHealth();
+        }
     }
 
     [ServerRpc]
@@ -468,13 +471,13 @@ public class PlayerControl : NetworkBehaviour
     {
         Rigidbody.isKinematic = true;
         playerModel.gameObject.SetActive(false);
-        Vector3 gravityDirection = gravity.GetDirection();
-        float gravityAcceleration = gravity.GetAcceleration();
+        Vector3 gravityDirection = networkGravity.GetDirection();
+        float networkGravityAcceleration = networkGravity.GetAcceleration();
         ParticleSystem dieParticles = Instantiate(dieEffectPrefab, transform.position, Quaternion.LookRotation(-gravityDirection)).GetComponent<ParticleSystem>();
         ParticleSystem.ForceOverLifetimeModule forceOverLifetime = dieParticles.forceOverLifetime;
-        forceOverLifetime.x = gravityDirection.x * gravityAcceleration;
-        forceOverLifetime.y = gravityDirection.y * gravityAcceleration;
-        forceOverLifetime.z = gravityDirection.z * gravityAcceleration;
+        forceOverLifetime.x = gravityDirection.x * networkGravityAcceleration;
+        forceOverLifetime.y = gravityDirection.y * networkGravityAcceleration;
+        forceOverLifetime.z = gravityDirection.z * networkGravityAcceleration;
         dieParticles.Play();
         Destroy(dieParticles.gameObject, dieParticles.main.duration);
         yield return new WaitForSeconds(deathTime);
@@ -501,7 +504,7 @@ public class PlayerControl : NetworkBehaviour
     [ServerRpc]
     private void JumpServerRpc()
     {
-        Rigidbody.linearVelocity -= gravity.GetDirection() * jumpVelocity;
+        Rigidbody.linearVelocity -= networkGravity.GetDirection() * jumpVelocity;
         JumpClientRpc();
     }
 
@@ -509,7 +512,7 @@ public class PlayerControl : NetworkBehaviour
     private void JumpClientRpc()
     {
         if (!IsOwner && !IsServer)
-            Rigidbody.linearVelocity -= gravity.GetDirection() * jumpVelocity;
+            Rigidbody.linearVelocity -= networkGravity.GetDirection() * jumpVelocity;
     }
 
     [ServerRpc(RequireOwnership = false)]

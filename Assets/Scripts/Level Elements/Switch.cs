@@ -11,6 +11,7 @@ public class Switch : NetworkBehaviour
 
     [SerializeField] private UnityEvent<int> OnChangeState;
     [SerializeField] private UnityEvent[] StateEvents;
+    [SerializeField] private InputActionProperty[] stateInputActions;
 
     [SerializeField] private bool wrapAround = false;
     [SerializeField] private InputActionProperty incrementAction;
@@ -20,7 +21,7 @@ public class Switch : NetworkBehaviour
     void Start()
     {
         OnChangeState?.Invoke(state);
-        StateEvents[state]?.Invoke();
+        TryInvokeStateEvent(state);
     }
 
     // Update is called once per frame
@@ -38,10 +39,28 @@ public class Switch : NetworkBehaviour
             {
                 SetState(state - 1);
             }
+            else if (stateInputActions != null)
+            {
+                for (int i = 0; i < stateInputActions.Length; i++)
+                {
+                    if (stateInputActions[i].action != null && stateInputActions[i].action.triggered)
+                    {
+                        SetState(i);
+                    }
+                }
+            }
         }
         else
         {
             popup.Hide();
+        }
+    }
+
+    private void TryInvokeStateEvent(int index)
+    {
+        if (index >= 0 && index < StateEvents.Length)
+        {
+            StateEvents[index]?.Invoke();
         }
     }
 
@@ -50,7 +69,7 @@ public class Switch : NetworkBehaviour
         Debug.Log("Update local state to " + newState);
         state = newState;
         OnChangeState?.Invoke(state);
-        StateEvents[state]?.Invoke();
+        TryInvokeStateEvent(state);
     }
 
     public void SetState(int newState)
@@ -85,14 +104,15 @@ public class Switch : NetworkBehaviour
     [ClientRpc(RequireOwnership = false)]
     private void SetStateClientRpc(int newState)
     {
-        if (!IsServer)
+        if(!IsServer)
             UpdateLocalState(newState);
     }
 
     [ServerRpc(RequireOwnership = false)]
     private void SetStateServerRpc(int newState)
     {
-        SetState(newState);
+        SetStateClientRpc(newState);
+        UpdateLocalState(newState);
     }
 
     private void UpdateLocalStateSilent(int newState)
@@ -118,12 +138,13 @@ public class Switch : NetworkBehaviour
     private void SetStateSilentClientRpc(int newState)
     {
         if (!IsServer)
-            SetStateSilent(newState);
+            UpdateLocalStateSilent(newState);
     }
 
     [ServerRpc(RequireOwnership = false)]
     private void SetStateSilentServerRpc(int newState)
     {
-        SetStateSilent(newState);
+        SetStateSilentClientRpc(newState);
+        UpdateLocalStateSilent(newState);
     }
 }

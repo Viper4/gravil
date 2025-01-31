@@ -1,5 +1,6 @@
 using MyUnityAddons.Calculations;
 using UnityEngine;
+using System.Collections;
 
 public class PlayerSpawn : MonoBehaviour
 {
@@ -7,9 +8,15 @@ public class PlayerSpawn : MonoBehaviour
 
     [SerializeField] private Vector3 defaultGravityDirection;
 
+    private IEnumerator AddResetListener()
+    {
+        yield return new WaitWhile(() => PlayerControl.Instance == null);
+        PlayerControl.Instance.OnRespawn += ResetPlayer;
+    }
+
     private void OnEnable()
     {
-        PlayerControl.Instance.OnRespawn += ResetPlayer;
+        StartCoroutine(AddResetListener());
     }
 
     private void OnDisable()
@@ -17,18 +24,25 @@ public class PlayerSpawn : MonoBehaviour
         PlayerControl.Instance.OnRespawn -= ResetPlayer;
     }
 
-    private void Awake()
+    private void Start()
     {
         _collider = GetComponent<Collider>();
-        ResetPlayer();
+        StartCoroutine(ResetPlayerWait());
     }
 
     private void Update()
     {
         if (PlayerControl.Instance.inputActions.Player.Reset.triggered)
         {
+            PlayerControl.Instance.OnRespawn?.Invoke();
             ResetPlayer();
         }
+    }
+    
+    private IEnumerator ResetPlayerWait()
+    {
+        yield return new WaitWhile(() => PlayerControl.Instance == null);
+        ResetPlayer();
     }
 
     private void ResetPlayer()
@@ -36,7 +50,7 @@ public class PlayerSpawn : MonoBehaviour
         PlayerControl.Instance.isGrounded = false;
         if(defaultGravityDirection != Vector3.zero)
         {
-            PlayerControl.Instance.gravity.SetDirection(defaultGravityDirection);
+            PlayerControl.Instance.networkGravity.SetDirection(defaultGravityDirection);
         }
         PlayerControl.Instance.transform.position = CustomRandom.GetPointInCollider(_collider);
         PlayerControl.Instance.ResetPlayer();

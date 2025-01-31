@@ -498,7 +498,14 @@ public class LobbyManager : MonoBehaviour
         if (hostLobby != null)
         {
             levelIndex++;
-            NetworkManager.Singleton.SceneManager.LoadScene(levelName + " " + levelIndex, LoadSceneMode.Single);
+            if(levelIndex >= SceneManager.sceneCountInBuildSettings - 1)
+            {
+                NetworkManager.Singleton.SceneManager.LoadScene("End Scene", LoadSceneMode.Single);
+            }
+            else
+            {
+                NetworkManager.Singleton.SceneManager.LoadScene(levelName + " " + levelIndex, LoadSceneMode.Single);
+            }
         }
     }
 

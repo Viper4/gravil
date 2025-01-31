@@ -1965,7 +1965,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 15, y: 15}
+  m_SizeDelta: {x: 30, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3741307731687989053
 CanvasRenderer:
@@ -2388,7 +2388,7 @@ SphereCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3024766386564071761}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: dbbf84165ae2cb649a5c8dc7a782cfd3, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -2927,8 +2927,8 @@ Camera:
   m_GameObject: {fileID: 4227017399561313416}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_ClearFlags: 2
+  m_BackGroundColor: {r: 0.3056603, g: 0.3056603, b: 0.3056603, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -3547,7 +3547,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 4239330460
+  GlobalObjectIdHash: 1140654194
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -3573,7 +3573,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  gravity: {fileID: 7401567204019517753}
+  networkGravity: {fileID: 7401567204019517753}
   playerModel: {fileID: 3951934351694719208}
   interactable: {fileID: 186277365545998342}
   localOwnedObjects:
@@ -3591,10 +3591,6 @@ MonoBehaviour:
   maxLeanAngle: 15
   leanSpeed: 100
   gravityRotateSpeed: 3.5
-  collisionLayers:
-    serializedVersion: 2
-    m_Bits: 264
-  obstacleDistance: 1
   hoverLayers:
     serializedVersion: 2
     m_Bits: 265
@@ -3700,6 +3696,7 @@ MonoBehaviour:
   changeDirectionClip: {fileID: 0}
   lockedClip: {fileID: 0}
   directionIndicator: {fileID: 4347030513617473420}
+  reticle: {fileID: 4149883865452969415}
   indicatorDirections:
   - {x: -1, y: 0, z: 0}
   - {x: 1, y: 0, z: 0}
@@ -3714,6 +3711,10 @@ MonoBehaviour:
   - {r: 1, g: 0, b: 1, a: 1}
   - {r: 0, g: 0, b: 1, a: 1}
   - {r: 1, g: 1, b: 0, a: 1}
+  offline: 1
+  collisionLayers:
+    serializedVersion: 2
+    m_Bits: 329
 --- !u!114 &7401567204019517753
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4017,7 +4018,7 @@ CapsuleCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5469409416145924289}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: dbbf84165ae2cb649a5c8dc7a782cfd3, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -5997,7 +5998,7 @@ BoxCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7538340508394662586}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: dbbf84165ae2cb649a5c8dc7a782cfd3, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -7917,7 +7918,7 @@ SphereCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8875368332919112750}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: dbbf84165ae2cb649a5c8dc7a782cfd3, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0

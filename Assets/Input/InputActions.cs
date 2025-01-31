@@ -161,6 +161,60 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""1"",
+                    ""type"": ""Button"",
+                    ""id"": ""834c3940-966a-4ce5-adf6-419223e46036"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""2"",
+                    ""type"": ""Button"",
+                    ""id"": ""f46d02e2-9681-497c-bb46-cd33ebe18fae"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""3"",
+                    ""type"": ""Button"",
+                    ""id"": ""c49872b9-fc57-4479-b4f1-59240c2a1ce6"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""4"",
+                    ""type"": ""Button"",
+                    ""id"": ""135df61e-8287-4cf3-aed3-31f219029026"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""5"",
+                    ""type"": ""Button"",
+                    ""id"": ""5d21d62b-60fb-4165-8ff9-d2f45a64408c"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""6"",
+                    ""type"": ""Button"",
+                    ""id"": ""7caea31d-3a0e-4725-b938-a1fda7ea24ad"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -568,6 +622,72 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": "";Keyboard&Mouse"",
                     ""action"": ""DownArrow"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""271f72d8-1039-4b3a-a8c2-802ca22333ed"",
+                    ""path"": ""<Keyboard>/1"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""1"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""977fb47d-5adb-4e8e-abea-ddb615724d60"",
+                    ""path"": ""<Keyboard>/2"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""2"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""acc1b22b-f5ee-4293-8c0d-c5d20e388cb1"",
+                    ""path"": ""<Keyboard>/3"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""3"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""df3bf291-3c2d-4ee3-bb0f-126c0fa9e41a"",
+                    ""path"": ""<Keyboard>/4"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""4"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""5d88f2c1-3e5c-431c-8d92-e7dfb1069bbf"",
+                    ""path"": ""<Keyboard>/5"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""5"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""6d96a167-68a0-4a53-a328-50140eb4cf6d"",
+                    ""path"": ""<Keyboard>/6"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""6"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -1210,6 +1330,12 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         m_Player_LoadNextLevel = m_Player.FindAction("LoadNextLevel", throwIfNotFound: true);
         m_Player_UpArrow = m_Player.FindAction("UpArrow", throwIfNotFound: true);
         m_Player_DownArrow = m_Player.FindAction("DownArrow", throwIfNotFound: true);
+        m_Player__1 = m_Player.FindAction("1", throwIfNotFound: true);
+        m_Player__2 = m_Player.FindAction("2", throwIfNotFound: true);
+        m_Player__3 = m_Player.FindAction("3", throwIfNotFound: true);
+        m_Player__4 = m_Player.FindAction("4", throwIfNotFound: true);
+        m_Player__5 = m_Player.FindAction("5", throwIfNotFound: true);
+        m_Player__6 = m_Player.FindAction("6", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_Navigate = m_UI.FindAction("Navigate", throwIfNotFound: true);
@@ -1306,6 +1432,12 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_LoadNextLevel;
     private readonly InputAction m_Player_UpArrow;
     private readonly InputAction m_Player_DownArrow;
+    private readonly InputAction m_Player__1;
+    private readonly InputAction m_Player__2;
+    private readonly InputAction m_Player__3;
+    private readonly InputAction m_Player__4;
+    private readonly InputAction m_Player__5;
+    private readonly InputAction m_Player__6;
     public struct PlayerActions
     {
         private @InputActions m_Wrapper;
@@ -1325,6 +1457,12 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         public InputAction @LoadNextLevel => m_Wrapper.m_Player_LoadNextLevel;
         public InputAction @UpArrow => m_Wrapper.m_Player_UpArrow;
         public InputAction @DownArrow => m_Wrapper.m_Player_DownArrow;
+        public InputAction @_1 => m_Wrapper.m_Player__1;
+        public InputAction @_2 => m_Wrapper.m_Player__2;
+        public InputAction @_3 => m_Wrapper.m_Player__3;
+        public InputAction @_4 => m_Wrapper.m_Player__4;
+        public InputAction @_5 => m_Wrapper.m_Player__5;
+        public InputAction @_6 => m_Wrapper.m_Player__6;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -1379,6 +1517,24 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
             @DownArrow.started += instance.OnDownArrow;
             @DownArrow.performed += instance.OnDownArrow;
             @DownArrow.canceled += instance.OnDownArrow;
+            @_1.started += instance.On_1;
+            @_1.performed += instance.On_1;
+            @_1.canceled += instance.On_1;
+            @_2.started += instance.On_2;
+            @_2.performed += instance.On_2;
+            @_2.canceled += instance.On_2;
+            @_3.started += instance.On_3;
+            @_3.performed += instance.On_3;
+            @_3.canceled += instance.On_3;
+            @_4.started += instance.On_4;
+            @_4.performed += instance.On_4;
+            @_4.canceled += instance.On_4;
+            @_5.started += instance.On_5;
+            @_5.performed += instance.On_5;
+            @_5.canceled += instance.On_5;
+            @_6.started += instance.On_6;
+            @_6.performed += instance.On_6;
+            @_6.canceled += instance.On_6;
         }
 
         private void UnregisterCallbacks(IPlayerActions instance)
@@ -1428,6 +1584,24 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
             @DownArrow.started -= instance.OnDownArrow;
             @DownArrow.performed -= instance.OnDownArrow;
             @DownArrow.canceled -= instance.OnDownArrow;
+            @_1.started -= instance.On_1;
+            @_1.performed -= instance.On_1;
+            @_1.canceled -= instance.On_1;
+            @_2.started -= instance.On_2;
+            @_2.performed -= instance.On_2;
+            @_2.canceled -= instance.On_2;
+            @_3.started -= instance.On_3;
+            @_3.performed -= instance.On_3;
+            @_3.canceled -= instance.On_3;
+            @_4.started -= instance.On_4;
+            @_4.performed -= instance.On_4;
+            @_4.canceled -= instance.On_4;
+            @_5.started -= instance.On_5;
+            @_5.performed -= instance.On_5;
+            @_5.canceled -= instance.On_5;
+            @_6.started -= instance.On_6;
+            @_6.performed -= instance.On_6;
+            @_6.canceled -= instance.On_6;
         }
 
         public void RemoveCallbacks(IPlayerActions instance)
@@ -1641,6 +1815,12 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         void OnLoadNextLevel(InputAction.CallbackContext context);
         void OnUpArrow(InputAction.CallbackContext context);
         void OnDownArrow(InputAction.CallbackContext context);
+        void On_1(InputAction.CallbackContext context);
+        void On_2(InputAction.CallbackContext context);
+        void On_3(InputAction.CallbackContext context);
+        void On_4(InputAction.CallbackContext context);
+        void On_5(InputAction.CallbackContext context);
+        void On_6(InputAction.CallbackContext context);
     }
     public interface IUIActions
     {

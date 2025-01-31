@@ -8,6 +8,7 @@ public class Interactable : MonoBehaviour
     private Collider[] colliders;
     private MeshRenderer meshRenderer;
     private GrabbableRigidbody grabbableRigidbody;
+    private Gravity gravity;
 
     public bool canInteract = true;
     public bool destructible = false;
@@ -29,6 +30,7 @@ public class Interactable : MonoBehaviour
         colliders = GetComponentsInChildren<Collider>();
         meshRenderer = GetComponent<MeshRenderer>();
         grabbableRigidbody = GetComponent<GrabbableRigidbody>();
+        gravity = GetComponent<Gravity>();
         startPosition = transform.position;
         startRotation = transform.rotation;
     }
@@ -41,16 +43,9 @@ public class Interactable : MonoBehaviour
         }
     }
 
-    private void ToggleActive(bool value)
+    private IEnumerator ToggleActive(bool value)
     {
         canInteract = value;
-
-        if (attachedRigidbody != null)
-            attachedRigidbody.isKinematic = !value;
-        foreach (Collider collider in colliders)
-        {
-            collider.enabled = value;
-        }
         meshRenderer.enabled = value;
 
         if (grabbableRigidbody != null)
@@ -58,20 +53,30 @@ public class Interactable : MonoBehaviour
             grabbableRigidbody.popup.Hide();
             grabbableRigidbody.enabled = value;
         }
+
+        yield return new WaitForFixedUpdate();
+        if (attachedRigidbody != null)
+        {
+            attachedRigidbody.isKinematic = !value;
+            if(value)
+            {
+                attachedRigidbody.linearVelocity = Vector3.zero;
+            }
+        }
+
+        foreach (Collider collider in colliders)
+        {
+            collider.enabled = value;
+        }
     }
 
     public void Respawn()
     {
         ForceRemoveInteract();
         isDissolving = false;
-        ToggleActive(true);
-
-        if (attachedRigidbody != null && !attachedRigidbody.isKinematic)
-        {
-            attachedRigidbody.linearVelocity = Vector3.zero;
-        }
 
         transform.SetPositionAndRotation(startPosition, startRotation);
+        StartCoroutine(ToggleActive(true));
     }
 
     public void Dissolve(Color dissolveColor)
@@ -80,19 +85,6 @@ public class Interactable : MonoBehaviour
             return;
 
         isDissolving = true;
-        ForceRemoveInteract();
-        if(grabbableRigidbody != null)
-        {
-            if (grabbableRigidbody.IsServer)
-            {
-                transform.SetParent(null);
-            }
-            else
-            {
-                grabbableRigidbody.SetParentNullServerRpc();
-            }
-        }
-
         if (dissolveEffectPrefab != null)
         {
             GameObject newEffect = Instantiate(dissolveEffectPrefab, transform.position, transform.rotation);
@@ -117,9 +109,24 @@ public class Interactable : MonoBehaviour
             Destroy(newEffect, respawnDelay);
         }
 
+        ForceRemoveInteract();
+
+        if (grabbableRigidbody != null)
+        {
+            grabbableRigidbody.Release();
+            if (grabbableRigidbody.IsServer)
+            {
+                transform.SetParent(null);
+            }
+            else
+            {
+                grabbableRigidbody.SetParentNullServerRpc();
+            }
+        }
+
         if (canRespawn)
         {
-            ToggleActive(false);
+            StartCoroutine(ToggleActive(false));
 
             if(respawnDelay >= 0)
                 Invoke(nameof(Respawn), respawnDelay);

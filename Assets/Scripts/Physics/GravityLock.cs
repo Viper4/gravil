@@ -39,6 +39,7 @@ public class GravityLock : MonoBehaviour
     {
         if (index < 0 || index >= directions.Length)
             return;
+
         directionIndex = index;
         direction = directions[index];
         OnDirectionChanged?.Invoke(index);

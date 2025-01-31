@@ -1,4 +1,6 @@
+using System;
 using UnityEngine;
+using UnityEngine.UI;
 
 [RequireComponent(typeof(Rigidbody))]
 public class Gravity : MonoBehaviour
@@ -19,9 +21,16 @@ public class Gravity : MonoBehaviour
     [SerializeField] private AudioClip changeDirectionClip;
     [SerializeField] private AudioClip lockedClip;
 
-    [SerializeField] private MeshRenderer directionIndicator;
+    [SerializeField] private Renderer directionIndicator;
+    [SerializeField] private Image reticle;
     [SerializeField] private Vector3[] indicatorDirections;
     [SerializeField] private Color[] indicatorColors;
+
+    public bool offline = true;
+
+    public Action<Vector3> OnLockChanged;
+
+    public LayerMask collisionLayers;
 
     private void Start()
     {
@@ -41,9 +50,9 @@ public class Gravity : MonoBehaviour
         }
     }
 
-    private void OnTriggerEnter(Collider other)
+    public void CheckColliderEnter(Collider other)
     {
-        if (canLock && other.CompareTag("GravityLock") && other.TryGetComponent(out GravityLock gravityLock))
+        if (!IsLocked && canLock && other.CompareTag("GravityLock") && other.TryGetComponent(out GravityLock gravityLock))
         {
             this.gravityLock = gravityLock;
             direction = gravityLock.GetDirection(lockOffset);
@@ -53,9 +62,9 @@ public class Gravity : MonoBehaviour
         }
     }
 
-    private void OnTriggerExit(Collider other)
+    public void CheckColliderExit(Collider other)
     {
-        if (canLock && other.CompareTag("GravityLock") && other.TryGetComponent(out GravityLock gravityLock))
+        if (IsLocked && canLock && other.CompareTag("GravityLock") && other.TryGetComponent(out GravityLock gravityLock))
         {
             gravityLock.OnDirectionChanged -= GravityLockDirectionChange;
             IsLocked = false;
@@ -63,23 +72,44 @@ public class Gravity : MonoBehaviour
         }
     }
 
+    private void OnTriggerEnter(Collider other)
+    {
+        if (offline)
+        {
+            CheckColliderEnter(other);
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (offline)
+        {
+            CheckColliderExit(other);
+        }
+    }
+
     private void UpdateDirectionIndicator()
     {
+        int closestIndex = 0;
+        float closestAngle = Vector3.Angle(indicatorDirections[0], direction);
+        for (int i = 1; i < indicatorDirections.Length; i++)
+        {
+            float angle = Vector3.Angle(indicatorDirections[i], direction);
+            if (angle < closestAngle)
+            {
+                closestAngle = angle;
+                closestIndex = i;
+            }
+        }
+
         if (directionIndicator != null)
         {
-            int closestIndex = 0;
-            float closestAngle = Vector3.Angle(indicatorDirections[0], direction);
-            for (int i = 1; i < indicatorDirections.Length; i++)
-            {
-                float angle = Vector3.Angle(indicatorDirections[i], direction);
-                if (angle < closestAngle)
-                {
-                    closestAngle = angle;
-                    closestIndex = i;
-                }
-            }
-
             directionIndicator.material.color = indicatorColors[closestIndex];
+        }
+
+        if(reticle != null)
+        {
+            reticle.color = indicatorColors[closestIndex];
         }
     }
 
@@ -88,13 +118,13 @@ public class Gravity : MonoBehaviour
         return direction;
     }
 
-    public void SetDirection(Vector3 direction)
+    public bool SetDirection(Vector3 direction)
     {
         if (IsLocked)
         {
             if(audioSource != null)
                 audioSource.PlayOneShot(lockedClip);
-            return;
+            return false;
         }
 
         if (audioSource != null)
@@ -103,17 +133,20 @@ public class Gravity : MonoBehaviour
         this.direction = direction;
 
         UpdateDirectionIndicator();
+        return true;
     }
 
     private void GravityLockDirectionChange(int index)
     {
         direction = gravityLock.GetDirection(lockOffset);
+        OnLockChanged?.Invoke(direction);
         UpdateDirectionIndicator();
     }
 
     public void ForceUnlock()
     {
-        gravityLock.OnDirectionChanged -= GravityLockDirectionChange;
+        if (gravityLock != null)
+            gravityLock.OnDirectionChanged -= GravityLockDirectionChange;
         IsLocked = false;
         gravityLock = null;
     }
