@@ -804,6 +804,15 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Fullscreen"",
+                    ""type"": ""Button"",
+                    ""id"": ""f665af87-af9d-44de-b6d2-3322680b3c86"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -1228,7 +1237,7 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""e02db59a-40d5-4731-86c6-100b435ccef5"",
-                    ""path"": ""<Keyboard>/numpadPeriod"",
+                    ""path"": ""<Keyboard>/f3"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -1244,6 +1253,17 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Menu"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""ba8c843b-9a3f-40a6-a0d4-d20af4aef992"",
+                    ""path"": ""<Keyboard>/f11"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Fullscreen"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -1350,6 +1370,7 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         m_UI_TrackedDeviceOrientation = m_UI.FindAction("TrackedDeviceOrientation", throwIfNotFound: true);
         m_UI_Debug = m_UI.FindAction("Debug", throwIfNotFound: true);
         m_UI_Menu = m_UI.FindAction("Menu", throwIfNotFound: true);
+        m_UI_Fullscreen = m_UI.FindAction("Fullscreen", throwIfNotFound: true);
     }
 
     ~@InputActions()
@@ -1635,6 +1656,7 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_UI_TrackedDeviceOrientation;
     private readonly InputAction m_UI_Debug;
     private readonly InputAction m_UI_Menu;
+    private readonly InputAction m_UI_Fullscreen;
     public struct UIActions
     {
         private @InputActions m_Wrapper;
@@ -1651,6 +1673,7 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         public InputAction @TrackedDeviceOrientation => m_Wrapper.m_UI_TrackedDeviceOrientation;
         public InputAction @Debug => m_Wrapper.m_UI_Debug;
         public InputAction @Menu => m_Wrapper.m_UI_Menu;
+        public InputAction @Fullscreen => m_Wrapper.m_UI_Fullscreen;
         public InputActionMap Get() { return m_Wrapper.m_UI; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -1696,6 +1719,9 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
             @Menu.started += instance.OnMenu;
             @Menu.performed += instance.OnMenu;
             @Menu.canceled += instance.OnMenu;
+            @Fullscreen.started += instance.OnFullscreen;
+            @Fullscreen.performed += instance.OnFullscreen;
+            @Fullscreen.canceled += instance.OnFullscreen;
         }
 
         private void UnregisterCallbacks(IUIActions instance)
@@ -1736,6 +1762,9 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
             @Menu.started -= instance.OnMenu;
             @Menu.performed -= instance.OnMenu;
             @Menu.canceled -= instance.OnMenu;
+            @Fullscreen.started -= instance.OnFullscreen;
+            @Fullscreen.performed -= instance.OnFullscreen;
+            @Fullscreen.canceled -= instance.OnFullscreen;
         }
 
         public void RemoveCallbacks(IUIActions instance)
@@ -1836,5 +1865,6 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         void OnTrackedDeviceOrientation(InputAction.CallbackContext context);
         void OnDebug(InputAction.CallbackContext context);
         void OnMenu(InputAction.CallbackContext context);
+        void OnFullscreen(InputAction.CallbackContext context);
     }
 }

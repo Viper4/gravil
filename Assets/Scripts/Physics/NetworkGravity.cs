@@ -68,12 +68,25 @@ public class NetworkGravity : NetworkBehaviour
 
     public void SetDirection(Vector3 direction)
     {
-        if (gravity.SetDirection(direction))
+        if (!IsOwner)
         {
-            directionX.Value = direction.x;
-            directionY.Value = direction.y;
-            directionZ.Value = direction.z;
+            RequestSetDirectionRpc(direction);
         }
+        else 
+        {
+            if (gravity.SetDirection(direction))
+            {
+                directionX.Value = direction.x;
+                directionY.Value = direction.y;
+                directionZ.Value = direction.z;
+            }
+        }
+    }
+
+    [Rpc(SendTo.Owner)]
+    private void RequestSetDirectionRpc(Vector3 direction)
+    {
+        SetDirection(direction);
     }
 
     public float GetAcceleration()

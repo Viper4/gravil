@@ -50,25 +50,38 @@ public class Gravity : MonoBehaviour
         }
     }
 
+    public void SetGravityLock(GravityLock gravityLock)
+    {
+        this.gravityLock = gravityLock;
+        direction = gravityLock.GetDirection(lockOffset);
+        UpdateDirectionIndicator();
+        gravityLock.OnDirectionChanged += GravityLockDirectionChange;
+        IsLocked = true;
+    }
+
+    public void RemoveGravityLock()
+    {
+        if (gravityLock != null)
+        {
+            gravityLock.OnDirectionChanged -= GravityLockDirectionChange;
+            IsLocked = false;
+            gravityLock = null;
+        }
+    }
+
     public void CheckColliderEnter(Collider other)
     {
         if (!IsLocked && canLock && other.CompareTag("GravityLock") && other.TryGetComponent(out GravityLock gravityLock))
         {
-            this.gravityLock = gravityLock;
-            direction = gravityLock.GetDirection(lockOffset);
-            UpdateDirectionIndicator();
-            gravityLock.OnDirectionChanged += GravityLockDirectionChange;
-            IsLocked = true;
+            SetGravityLock(gravityLock);
         }
     }
 
     public void CheckColliderExit(Collider other)
     {
-        if (IsLocked && canLock && other.CompareTag("GravityLock") && other.TryGetComponent(out GravityLock gravityLock))
+        if (IsLocked && canLock && other.CompareTag("GravityLock") && other.transform == gravityLock.transform)
         {
-            gravityLock.OnDirectionChanged -= GravityLockDirectionChange;
-            IsLocked = false;
-            this.gravityLock = null;
+            RemoveGravityLock();
         }
     }
 

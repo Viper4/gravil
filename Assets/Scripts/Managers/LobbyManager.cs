@@ -50,13 +50,17 @@ public class LobbyManager : MonoBehaviour
     public event Action<List<int>> OnPlayerLeft;
     public event Action<Dictionary<int, Dictionary<string, ChangedOrRemovedLobbyValue<PlayerDataObject>>>> OnPlayerDataChanged;
     public event Action<string> OnJoinLobbyFailed;
+    public event Action<float> OnGameComplete;
 
     private bool leavingLobby;
-    public bool voluntaryLeave;
+    [HideInInspector] public bool voluntaryLeave;
 
-    public bool inGame;
+    [HideInInspector] public bool inGame;
     private string levelName;
     private int levelIndex = -1;
+    private float timer = 0f;
+
+    private readonly int sceneIndexOffset = 2; // Main menu = 0 and Lobby = 1
 
     private async void Start()
     {
@@ -71,7 +75,7 @@ public class LobbyManager : MonoBehaviour
             return;
         }
 
-        SceneLoader.Instance.OnSceneLoaded += OnSceneLoaded;
+        SceneManager.sceneLoaded += OnSceneLoaded;
 
         await UnityServices.InitializeAsync();
 
@@ -83,6 +87,11 @@ public class LobbyManager : MonoBehaviour
     {
         HostLobbyHeartbeat();
         UpdateJoinedLobby();
+
+        if (inGame)
+        {
+            timer += Time.deltaTime;
+        }
     }
 
     public void SetRegion(string region)
@@ -180,6 +189,8 @@ public class LobbyManager : MonoBehaviour
     {
         try
         {
+            SceneLoader.Instance.ShowLoadingScreen("Creating lobby...");
+
             CreateLobbyOptions options = new CreateLobbyOptions()
             {
                 IsPrivate = isPrivate,
@@ -250,6 +261,19 @@ public class LobbyManager : MonoBehaviour
         }
     }
 
+    private void OnSceneEvent(SceneEvent sceneEvent)
+    {
+        switch (sceneEvent.SceneEventType)
+        {
+            case SceneEventType.LoadComplete:
+                SceneLoader.Instance.HideLoadingScreen();
+                break;
+            case SceneEventType.Load:
+                SceneLoader.Instance.ShowLoadingScreen($"Loading {sceneEvent.SceneName}...");
+                break;
+        }
+    }
+
     private async void JoinLobbyRelay(Lobby lobby)
     {
         JoinAllocation joinAllocation = await JoinRelay(lobby.Data[RELAY_JOIN_CODE_KEY].Value);
@@ -264,6 +288,8 @@ public class LobbyManager : MonoBehaviour
         AddLobbyListeners(joinedLobby);
 
         NetworkManager.Singleton.StartClient();
+
+        NetworkManager.Singleton.SceneManager.OnSceneEvent += OnSceneEvent;
     }
 
     public async void JoinLobbyByCode(string code)
@@ -407,11 +433,6 @@ public class LobbyManager : MonoBehaviour
                 }
             }
         }
-        /*string newScene = levelName + " " + levelIndex;
-        if (oldScene != newScene)
-        {
-            SceneLoader.Instance.LoadScene(newScene);
-        }*/
     }
 
     /// <summary>
@@ -436,8 +457,8 @@ public class LobbyManager : MonoBehaviour
                 });
                 if (PlayerControl.Instance != null)
                 {
-                    PlayerControl.Instance.UpdatePlayerServerRpc(playerName, playerNameColor, playerColor, AuthenticationService.Instance.PlayerId);
-                    //PlayerControl.Instance.UpdatePlayerClientRpc(playerName, playerNameColor, playerColor);
+                    PlayerControl.Instance.UpdatePlayerLocal(playerName, playerNameColor, playerColor, AuthenticationService.Instance.PlayerId);
+                    PlayerControl.Instance.SendPlayerDataRpc(playerName, playerNameColor, playerColor, AuthenticationService.Instance.PlayerId);
                 }
             }
         }
@@ -486,9 +507,11 @@ public class LobbyManager : MonoBehaviour
     {
         if (hostLobby != null)
         {
+            timer = 0;
             UpdateGameData(true);
             levelName = "Level";
             levelIndex = 0;
+            SceneLoader.Instance.ShowLoadingScreen($"Loading {levelName} {levelIndex}...");
             NetworkManager.Singleton.SceneManager.LoadScene(levelName + " " + levelIndex, LoadSceneMode.Single);
         }
     }
@@ -498,19 +521,31 @@ public class LobbyManager : MonoBehaviour
         if (hostLobby != null)
         {
             levelIndex++;
-            if(levelIndex >= SceneManager.sceneCountInBuildSettings - 1)
+            if (levelIndex >= SceneManager.sceneCountInBuildSettings - 2) // -2 for main menu and lobby
             {
-                NetworkManager.Singleton.SceneManager.LoadScene("End Scene", LoadSceneMode.Single);
+                NetworkManager.Singleton.SceneManager.LoadScene("Lobby", LoadSceneMode.Single);
+                OnGameComplete?.Invoke(timer); // Host wont receive OnSceneLoad event
             }
             else
             {
+                SceneLoader.Instance.ShowLoadingScreen($"Loading {levelName} {levelIndex}...");
                 NetworkManager.Singleton.SceneManager.LoadScene(levelName + " " + levelIndex, LoadSceneMode.Single);
             }
         }
     }
 
-    private void OnSceneLoaded(string sceneName)
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
+        if (scene.buildIndex == sceneIndexOffset) 
+        {
+            timer = 0;
+        }
+        else if (scene.name == "Lobby" && levelIndex == SceneManager.sceneCountInBuildSettings - (1 + sceneIndexOffset))
+        {
+            OnGameComplete?.Invoke(timer);
+        }
+        levelIndex = scene.buildIndex - sceneIndexOffset;
+
         if (!NetworkManager.Singleton.IsClient)
         {
             if (hostLobby != null)
@@ -537,6 +572,7 @@ public class LobbyManager : MonoBehaviour
 
     private IEnumerator ShutdownLoadMainMenu()
     {
+        NetworkManager.Singleton.SceneManager.OnSceneEvent -= OnSceneEvent;
         NetworkManager.Singleton.Shutdown();
         yield return new WaitWhile(() => NetworkManager.Singleton.ShutdownInProgress);
         SceneLoader.Instance.LoadScene("Main Menu");

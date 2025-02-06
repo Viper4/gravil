@@ -39,22 +39,10 @@ public class CameraControl : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.F11))
-        {
-            Screen.fullScreen = !Screen.fullScreen;
-            if (Screen.fullScreen)
-            {
-                Screen.fullScreenMode = FullScreenMode.ExclusiveFullScreen;
-            }
-            else
-            {
-                Screen.fullScreenMode = FullScreenMode.Windowed;
-            }
-        }
         if (!PlayerControl.Instance.IsPaused)
         {
             // Translating inputs from mouse into smoothed rotation of camera
-            Vector2 look = PlayerControl.Instance.inputActions.Player.Look.ReadValue<Vector2>();
+            Vector2 look = GameManager.Instance.inputActions.Player.Look.ReadValue<Vector2>();
             yaw += look.x * sensitivity;
             pitch -= look.y * sensitivity;
 
@@ -64,7 +52,7 @@ public class CameraControl : MonoBehaviour
             currentRotation.x += pitchDelta; // Ignore smoothing when offsetting pitch
 
             // Zoom with scroll
-            float scroll = PlayerControl.Instance.inputActions.Player.Scroll.ReadValue<float>();
+            float scroll = GameManager.Instance.inputActions.Player.Scroll.ReadValue<float>();
             if (scroll > 0)
             {
                 dstFromTarget = Mathf.Clamp(dstFromTarget - zoomRate, targetDstMinMax.x, targetDstMinMax.y);
@@ -87,7 +75,7 @@ public class CameraControl : MonoBehaviour
             else
             {
                 Cursor.lockState = CursorLockMode.Confined;
-                reticle.position = PlayerControl.Instance.inputActions.UI.Point.ReadValue<Vector2>();
+                reticle.position = GameManager.Instance.inputActions.UI.Point.ReadValue<Vector2>();
                 pitch = Mathf.Clamp(pitch, pitchMinMax3rdPerson.x, pitchMinMax3rdPerson.y);
                 currentRotation.x = Mathf.Clamp(currentRotation.x, pitchMinMax3rdPerson.x, pitchMinMax3rdPerson.y);
             }

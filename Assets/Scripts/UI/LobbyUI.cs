@@ -52,9 +52,6 @@ public class LobbyUI : MonoBehaviour
     [SerializeField] private Image popupPanel;
     [SerializeField] private TextMeshProUGUI popupText;
 
-    [SerializeField] private GameObject loadingPanel;
-    [SerializeField] private TextMeshProUGUI loadingText;
-
     private void Start()
     {
         playerNameInput.onValueChanged.AddListener(ctx => LobbyManager.Instance.playerName = ctx);
@@ -199,8 +196,7 @@ public class LobbyUI : MonoBehaviour
 
     private void JoinLobbyById(string id)
     {
-        loadingPanel.SetActive(true);
-        loadingText.text = "Joining lobby...";
+        SceneLoader.Instance.ShowLoadingScreen("Joining lobby...");
         LobbyManager.Instance.JoinLobbyById(id);
     }
 
@@ -208,22 +204,20 @@ public class LobbyUI : MonoBehaviour
     {
         if (!string.IsNullOrEmpty(lobbyCodeInput.text))
         {
-            loadingPanel.SetActive(true);
-            loadingText.text = "Joining lobby...";
+            SceneLoader.Instance.ShowLoadingScreen("Joining lobby...");
             LobbyManager.Instance.JoinLobbyByCode(lobbyCodeInput.text);
         }
     }
 
-    private void OnJoinLobby()
-    {
-        loadingText.text = "Connecting...";
-    }
-
     private void JoinRandomLobby()
     {
-        loadingPanel.SetActive(true);
-        loadingText.text = "Joining lobby...";
+        SceneLoader.Instance.ShowLoadingScreen("Joining lobby...");
         LobbyManager.Instance.QuickJoinLobby();
+    }
+
+    private void OnJoinLobby()
+    {
+        SceneLoader.Instance.ShowLoadingScreen("Connecting..."); // LobbyManager handles hiding once scene loads
     }
 
     private void RefreshLobbyList()
@@ -268,7 +262,7 @@ public class LobbyUI : MonoBehaviour
 
     private void FailedToJoinLobby(string message)
     {
-        loadingPanel.SetActive(false);
+        SceneLoader.Instance.HideLoadingScreen();
         StartCoroutine(Popup("Failed to join: " + message, new Color(0.4f, 0f, 0f, 0.9f), Color.red, 1.5f));
     }
 

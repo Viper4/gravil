@@ -27,7 +27,7 @@ public class DebugUI : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.F3))
+        if (GameManager.Instance != null && GameManager.Instance.inputActions.UI.Debug.triggered)
         {
             logDisplay.SetActive(!logDisplay.activeSelf);
         }

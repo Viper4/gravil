@@ -1,8 +1,6 @@
 using Unity.Collections;
 using Unity.Netcode;
-using Unity.VisualScripting;
 using UnityEngine;
-using WebSocketSharp;
 
 public class GrabbableRigidbody : NetworkBehaviour
 {
@@ -79,7 +77,7 @@ public class GrabbableRigidbody : NetworkBehaviour
                 
                 if (PlayerControl.Instance.playerId == grabberId)
                 {
-                    if (PlayerControl.Instance.inputActions.Player.Interact.triggered || PlayerControl.Instance.isDead)
+                    if (GameManager.Instance.inputActions.Player.Interact.triggered || PlayerControl.Instance.isDead)
                     {
                         Release();
                     }
@@ -98,7 +96,7 @@ public class GrabbableRigidbody : NetworkBehaviour
             if (ownerInTrigger && PlayerControl.Instance.HoveredObject == transform && !PlayerControl.Instance.isDead)
             {
                 popup.Show("'E' to grab");
-                if (PlayerControl.Instance.inputActions.Player.Interact.triggered)
+                if (GameManager.Instance.inputActions.Player.Interact.triggered)
                 {
                     Grab(PlayerControl.Instance.playerId);
                 }

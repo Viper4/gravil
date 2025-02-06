@@ -782,6 +782,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "Fullscreen",
+                    "type": "Button",
+                    "id": "f665af87-af9d-44de-b6d2-3322680b3c86",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -1206,7 +1215,7 @@
                 {
                     "name": "",
                     "id": "e02db59a-40d5-4731-86c6-100b435ccef5",
-                    "path": "<Keyboard>/numpadPeriod",
+                    "path": "<Keyboard>/f3",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -1222,6 +1231,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "Menu",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "ba8c843b-9a3f-40a6-a0d4-d20af4aef992",
+                    "path": "<Keyboard>/f11",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Fullscreen",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

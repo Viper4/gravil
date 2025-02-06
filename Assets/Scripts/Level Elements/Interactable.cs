@@ -77,6 +77,15 @@ public class Interactable : MonoBehaviour
 
         transform.SetPositionAndRotation(startPosition, startRotation);
         StartCoroutine(ToggleActive(true));
+        foreach (GravityLock gravityLock in GameManager.Instance.gravityLocks)
+        {
+            if (colliders[0].bounds.Intersects(gravityLock.attachedCollider.bounds))
+            {
+                gravity.SetGravityLock(gravityLock);
+                return;
+            }
+        }
+        gravity.RemoveGravityLock();
     }
 
     public void Dissolve(Color dissolveColor)

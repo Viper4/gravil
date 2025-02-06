@@ -5,6 +5,7 @@ using UnityEngine;
 [RequireComponent(typeof(Collider))]
 public class GravityLock : MonoBehaviour
 {
+    public Collider attachedCollider { get; private set; }
     [SerializeField] private Vector3[] directions;
     [SerializeField] private int directionIndex = 0;
     private Vector3 direction;
@@ -13,6 +14,7 @@ public class GravityLock : MonoBehaviour
 
     private void Start()
     {
+        attachedCollider = GetComponent<Collider>();
         direction = directions[directionIndex];
     }
 

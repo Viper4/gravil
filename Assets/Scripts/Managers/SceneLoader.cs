@@ -5,19 +5,25 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using TMPro;
 using System;
-using Unity.Netcode;
+using Unity.VisualScripting;
 
 public class SceneLoader : MonoBehaviour
 {
     public static SceneLoader Instance { get; private set; }
 
-    [SerializeField] private GameObject loadingScreen;
-    [SerializeField] private Slider loadingBar;
-    [SerializeField] private TextMeshProUGUI loadingText;
+    [SerializeField] GameObject canvas;
+
+    [Header("Loading with no progress")] private string loadingText = "Loading...";
+    [SerializeField] private TextMeshProUGUI loadingTMP;
+    [SerializeField] private float characterSpeed = 0.25f;
+    private int characterIndex = 0;
+    private int animatedCharacters = 3;
+    private float timer = 0;
+    [SerializeField, Header("Loading with progress")] private Slider loadingBar;
+    [SerializeField] private TextMeshProUGUI loadingBarTMP;
     public bool isLoading { get; private set; }
 
     public event Action<string> OnStartSceneLoad;
-    public event Action<string> OnSceneLoaded;
 
     private void Awake()
     {
@@ -25,10 +31,33 @@ public class SceneLoader : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
+            SceneManager.sceneLoaded += (scene, mode) => HideLoadingScreen();
         }
         else
         {
             Destroy(gameObject);
+        }
+    }
+
+    private void Update()
+    {
+        if (loadingTMP.gameObject.activeSelf)
+        {
+            if (timer > characterSpeed)
+            {
+                if (characterIndex >= animatedCharacters)
+                {
+                    loadingTMP.text = loadingText[..^animatedCharacters];
+                    characterIndex = 0;
+                }
+                else
+                {
+                    loadingTMP.text = loadingText[..^(animatedCharacters - (characterIndex + 1))];
+                    characterIndex++;
+                }
+                timer = 0;
+            }
+            timer += Time.deltaTime;
         }
     }
 
@@ -41,7 +70,8 @@ public class SceneLoader : MonoBehaviour
     {
         OnStartSceneLoad?.Invoke(sceneName);
         isLoading = true;
-        loadingScreen.SetActive(true);
+        canvas.SetActive(true);
+        loadingBar.gameObject.SetActive(true);
         AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Single);
         asyncLoad.allowSceneActivation = false;
         // Async load progress goes from 0 to 0.9
@@ -50,15 +80,37 @@ public class SceneLoader : MonoBehaviour
         {
             progress = asyncLoad.progress / 0.9f;
             loadingBar.value = progress;
-            loadingText.text = Mathf.RoundToInt(progress * 100f) + "%";
+            loadingBarTMP.text = Mathf.RoundToInt(progress * 100f) + "%";
             yield return new WaitForEndOfFrame();
         }
         asyncLoad.allowSceneActivation = true;
         loadingBar.value = 1;
-        loadingText.text = "100%";
-        yield return new WaitUntil(() => SceneManager.GetActiveScene().name == sceneName);
-        loadingScreen.SetActive(false);
+        loadingBarTMP.text = "100%";
+        Scene currentScene = SceneManager.GetActiveScene();
+        while (currentScene.name != sceneName)
+        {
+            yield return new WaitForSecondsRealtime(0.1f);
+            currentScene = SceneManager.GetActiveScene();
+        }
+        canvas.SetActive(false);
+        loadingBar.gameObject.SetActive(false);
         isLoading = false;
-        OnSceneLoaded?.Invoke(sceneName);
+    }
+
+    public void ShowLoadingScreen(string text, int animatedCharacters = 3)
+    {
+        canvas.SetActive(true);
+        loadingTMP.gameObject.SetActive(true);
+        timer = 0;
+        characterIndex = 0;
+        loadingText = text;
+        loadingTMP.text = loadingText[..^animatedCharacters];
+        this.animatedCharacters = animatedCharacters;
+    }
+
+    public void HideLoadingScreen()
+    {
+        canvas.SetActive(false);
+        loadingTMP.gameObject.SetActive(false);
     }
 }

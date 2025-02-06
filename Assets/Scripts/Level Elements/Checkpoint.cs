@@ -9,7 +9,7 @@ public class Checkpoint : MonoBehaviour
         if (!other.isTrigger && other.CompareTag("Player"))
         {
             playersInTrigger++;
-            if(PlayerControl.Instance.IsServer && playersInTrigger >= LobbyManager.Instance.joinedLobby.Players.Count)
+            if (PlayerControl.Instance.IsServer && playersInTrigger >= LobbyManager.Instance.joinedLobby.Players.Count)
             {
                 LobbyManager.Instance.LoadNextLevel();
             }

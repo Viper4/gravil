@@ -95,7 +95,6 @@ public class SmoothTransform : NetworkBehaviour
 
     private void ReachedPosition()
     {
-        Debug.Log("Reached position");
         moving = false;
         reachedPosition = true;
         OnPositionReached?.Invoke(positionIndex);
@@ -146,8 +145,6 @@ public class SmoothTransform : NetworkBehaviour
         moving = true;
         positionIndex = Mathf.Clamp(index, 0, positions.Length - 1);
         targetPosition = positions[positionIndex];
-        Debug.Log(targetPosition.ToString());
-        Debug.Log(transform.localPosition.ToString());
     }
 
     public void StartMove(Vector3 targetPosition)

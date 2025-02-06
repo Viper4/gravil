@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using Unity.Services.Lobbies;
 using Unity.Services.Authentication;
 using System.Collections;
-using Unity.VisualScripting;
+using UnityEngine.SceneManagement;
 
 public class PlayerUI : MonoBehaviour
 {
@@ -38,6 +38,9 @@ public class PlayerUI : MonoBehaviour
 
     [SerializeField] private Sprite unmutedIcon;
     [SerializeField] private Sprite mutedIcon;
+
+    [SerializeField, Header("Congratulations")] private GameObject congratsPanel;
+    [SerializeField] private TextMeshProUGUI statsText;
 
     private struct PlayerListItem
     {
@@ -75,12 +78,13 @@ public class PlayerUI : MonoBehaviour
         LobbyManager.Instance.OnPlayerLeft += PlayerLeft;
         LobbyManager.Instance.OnPlayerDataChanged += PlayerDataChanged;
         LobbyManager.Instance.OnJoinLobbyFailed += FailedToJoinLobby;
+        LobbyManager.Instance.OnGameComplete += OnGameComplete;
 
         playerNameInput.text = LobbyManager.Instance.playerName;
         nameColorButton.GetComponent<Image>().color = LobbyManager.Instance.playerNameColor;
         playerColorButton.GetComponent<Image>().color = LobbyManager.Instance.playerColor;
 
-        if(LobbyManager.Instance.hostLobby != null)
+        if (LobbyManager.Instance.hostLobby != null)
         {
             lobbyNameInput.text = LobbyManager.Instance.hostLobby.Name;
             maxPlayersInput.text = LobbyManager.Instance.hostLobby.MaxPlayers.ToString();
@@ -102,7 +106,7 @@ public class PlayerUI : MonoBehaviour
 
     private void Update()
     {
-        if (PlayerControl.Instance != null && PlayerControl.Instance.inputActions.UI.Menu.triggered)
+        if (PlayerControl.Instance != null && GameManager.Instance.inputActions.UI.Menu.triggered)
         {
             reticle.SetActive(!PlayerControl.Instance.IsPaused);
             inLobbyPanel.SetActive(PlayerControl.Instance.IsPaused);
@@ -410,5 +414,18 @@ public class PlayerUI : MonoBehaviour
         LobbyManager.Instance.OnPlayerJoined -= PlayerJoined;
         LobbyManager.Instance.OnPlayerLeft -= PlayerLeft;
         LobbyManager.Instance.OnPlayerDataChanged -= PlayerDataChanged;
+    }
+
+    private void OnGameComplete(float time)
+    {
+        if (LobbyManager.Instance.hostLobby != null)
+        {
+            startGameButton.gameObject.SetActive(true);
+        }
+
+        congratsPanel.SetActive(true);
+        int minutes = (int)time / 60;
+        float seconds = time % 60;
+        statsText.text = $"Completion time: {minutes}:{seconds:F2}";
     }
 }

@@ -21,7 +21,6 @@ public class PlayerControl : NetworkBehaviour
     [SerializeField] private MeshRenderer[] faceRenderers;
     [SerializeField] private TextMeshProUGUI nameText;
 
-    public InputActions inputActions;
     public string playerId;
     public bool IsPaused { get; private set; }
 
@@ -53,17 +52,6 @@ public class PlayerControl : NetworkBehaviour
 
     [SerializeField] private bool cheatsEnabled = false;
 
-    private void OnEnable()
-    {
-        inputActions = new InputActions();
-        inputActions.Enable();
-    }
-
-    private void OnDisable()
-    {
-        inputActions.Disable();
-    }
-
     private void Start()
     {
         Rigidbody = GetComponent<Rigidbody>();
@@ -78,13 +66,14 @@ public class PlayerControl : NetworkBehaviour
 
                 if (!IsServer)
                 {
-                    // Request that the host sends over everyones' data to this newly spawned player
-                    UpdatePlayerServerRpc(LobbyManager.Instance.playerName, LobbyManager.Instance.playerNameColor, LobbyManager.Instance.playerColor, AuthenticationService.Instance.PlayerId);
-                    NewPlayerUpdateServerRpc();
+                    // Send my data to everyone else
+                    UpdatePlayerLocal(LobbyManager.Instance.playerName, LobbyManager.Instance.playerNameColor, LobbyManager.Instance.playerColor, AuthenticationService.Instance.PlayerId);
+                    SendPlayerDataRpc(LobbyManager.Instance.playerName, LobbyManager.Instance.playerNameColor, LobbyManager.Instance.playerColor, AuthenticationService.Instance.PlayerId);
+                    RequestPlayerDataRpc(); // Request host sends everyone's data to this player
                 }
                 else
                 {
-                    UpdatePlayer(LobbyManager.Instance.playerName, LobbyManager.Instance.playerNameColor, LobbyManager.Instance.playerColor, AuthenticationService.Instance.PlayerId);
+                    UpdatePlayerLocal(LobbyManager.Instance.playerName, LobbyManager.Instance.playerNameColor, LobbyManager.Instance.playerColor, AuthenticationService.Instance.PlayerId);
                 }
                 GameManager.Instance.players.Clear();
                 GameManager.Instance.players.Add(AuthenticationService.Instance.PlayerId, this);
@@ -113,8 +102,9 @@ public class PlayerControl : NetworkBehaviour
         else
         {
             OnStopMove?.Invoke();
-            if (!IsServer)
-                MoveServerRpc(Vector2.zero);
+            moveInput = Vector2.zero;
+            SendMoveRpc(Vector3.zero);
+            SendPositionRpc(transform.position);
             IsPaused = true;
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
@@ -127,7 +117,7 @@ public class PlayerControl : NetworkBehaviour
             return;
 
         // Raycast to get what the player is hovering over
-        Vector3 screenPosition = inputActions.UI.Point.ReadValue<Vector2>();
+        Vector3 screenPosition = GameManager.Instance.inputActions.UI.Point.ReadValue<Vector2>();
         Ray ray = Camera.main.ScreenPointToRay(screenPosition);
         if (Physics.Raycast(ray, out RaycastHit hoverHit, Mathf.Infinity, hoverLayers))
         {
@@ -183,18 +173,18 @@ public class PlayerControl : NetworkBehaviour
 
         if (IsOwner)
         {
-            if (inputActions.UI.Menu.triggered)
+            if (GameManager.Instance.inputActions.UI.Menu.triggered)
             {
                 TogglePause();
             }
 
-            if (cheatsEnabled && inputActions.Player.LoadNextLevel.triggered)
+            if (cheatsEnabled && GameManager.Instance.inputActions.Player.LoadNextLevel.triggered)
             {
                 LobbyManager.Instance.LoadNextLevel();
             }
 
             GetHover();
-            if (inputActions.Player.Gravity.triggered)
+            if (GameManager.Instance.inputActions.Player.Gravity.triggered)
             {
                 SwitchGravity();
             }
@@ -222,7 +212,7 @@ public class PlayerControl : NetworkBehaviour
         {
             if (IsOwner)
             {
-                Vector2 newMoveInput = inputActions.Player.Move.ReadValue<Vector2>();
+                Vector2 newMoveInput = GameManager.Instance.inputActions.Player.Move.ReadValue<Vector2>();
 
                 if (moveInput == Vector2.zero && newMoveInput != Vector2.zero)
                 {
@@ -245,31 +235,15 @@ public class PlayerControl : NetworkBehaviour
                         OnGroundChanged?.Invoke(ground.tag);
                     }
 
-                    if (IsServer)
-                    {
-                        MoveClientRpc(newMoveInput);
-                        SyncPositionClientRpc(transform.position);
-                    }
-                    else
-                    {
-                        MoveServerRpc(newMoveInput);
-                        SyncPositionServerRpc(transform.position);
-                    }
+                    SendMoveRpc(newMoveInput);
+                    SendPositionRpc(transform.position);
                 }
                 moveInput = newMoveInput;
 
-                if (isGrounded && inputActions.Player.Jump.ReadValue<float>() > 0)
+                if (isGrounded && GameManager.Instance.inputActions.Player.Jump.ReadValue<float>() > 0)
                 {
-                    if (IsServer)
-                    {
-                        JumpClientRpc();
-                        SyncPositionClientRpc(transform.position);
-                    }
-                    else
-                    {
-                        JumpServerRpc();
-                        SyncPositionServerRpc(transform.position);
-                    }
+                    SendPositionRpc(transform.position);
+                    SendJumpRpc();
                     OnJump?.Invoke();
                     Rigidbody.linearVelocity -= gravityDirection * jumpVelocity;
                     isGrounded = false;
@@ -277,10 +251,6 @@ public class PlayerControl : NetworkBehaviour
                     OnGroundChanged?.Invoke("Air");
                 }
             }
-        }
-        else
-        {
-            moveInput = Vector2.zero;
         }
 
         moveDirection = transform.forward * moveInput.y + transform.right * moveInput.x;
@@ -298,14 +268,7 @@ public class PlayerControl : NetworkBehaviour
 
         if (Vector3.Angle(collision.GetContact(0).normal, -networkGravity.GetDirection()) < 45f)
         {
-            if (IsServer)
-            {
-                SyncPositionClientRpc(transform.position);
-            }
-            else
-            {
-                SyncPositionServerRpc(transform.position);
-            }
+            SendPositionRpc(transform.position);
 
             ground = collision.collider.transform;
             isGrounded = true;
@@ -343,7 +306,7 @@ public class PlayerControl : NetworkBehaviour
         }
     }
 
-    private void UpdatePlayer(string name, Color nameColor, Color bodyColor, string playerId) 
+    public void UpdatePlayerLocal(string name, Color nameColor, Color bodyColor, string playerId) 
     {
         this.name = name;
         nameText.text = name;
@@ -356,25 +319,10 @@ public class PlayerControl : NetworkBehaviour
         this.playerId = playerId;
     }
 
-    [ServerRpc(RequireOwnership = false)]
-    public void UpdatePlayerServerRpc(string name, Color nameColor, Color bodyColor, string playerId)
+    [Rpc(SendTo.NotMe)]
+    public void SendPlayerDataRpc(string name, Color nameColor, Color bodyColor, string playerId)
     {
-        UpdatePlayer(name, nameColor, bodyColor, playerId);
-        UpdatePlayerClientRpc(name, nameColor, bodyColor, playerId);
-        if (GameManager.Instance.players.ContainsKey(playerId))
-        {
-            GameManager.Instance.players[playerId] = this;
-        }
-        else 
-        {
-            GameManager.Instance.players.Add(playerId, this);
-        }
-    }
-
-    [ClientRpc(RequireOwnership = false)]
-    public void UpdatePlayerClientRpc(string name, Color nameColor, Color bodyColor, string playerId)
-    {
-        UpdatePlayer(name, nameColor, bodyColor, playerId);
+        UpdatePlayerLocal(name, nameColor, bodyColor, playerId);
         if (GameManager.Instance.players.ContainsKey(playerId))
         {
             GameManager.Instance.players[playerId] = this;
@@ -385,17 +333,10 @@ public class PlayerControl : NetworkBehaviour
         }
     }
 
-    [ServerRpc]
-    private void NewPlayerUpdateServerRpc()
+    [Rpc(SendTo.NotMe)]
+    private void RequestPlayerDataRpc()
     {
-        Instance.UpdatePlayerClientRpc(LobbyManager.Instance.playerName, LobbyManager.Instance.playerNameColor, LobbyManager.Instance.playerColor, AuthenticationService.Instance.PlayerId);
-        NewPlayerUpdateClientRpc();
-    }
-
-    [ClientRpc]
-    private void NewPlayerUpdateClientRpc()
-    {
-        Instance.UpdatePlayerServerRpc(LobbyManager.Instance.playerName, LobbyManager.Instance.playerNameColor, LobbyManager.Instance.playerColor, AuthenticationService.Instance.PlayerId);
+        Instance.SendPlayerDataRpc(LobbyManager.Instance.playerName, LobbyManager.Instance.playerNameColor, LobbyManager.Instance.playerColor, AuthenticationService.Instance.PlayerId);
     }
 
     public void ResetPlayer()
@@ -407,28 +348,20 @@ public class PlayerControl : NetworkBehaviour
         interactable.ForceRemoveInteract();
         healthSystem.ResetHealth();
         Rigidbody.linearVelocity = Vector3.zero;
-        if (IsServer)
-        {
-            SyncPositionClientRpc(transform.position);
-        }
-        else
-        {
-            SyncPositionServerRpc(transform.position);
-        }
+
+        SendPositionRpc(transform.position);
     }
 
     public void Die()
     {
+        DieLocal();
+
         if (IsServer)
         {
             transform.SetParent(null);
-            DieLocal();
-            DieClientRpc();
         }
-        else
-        {
-            DieServerRpc();
-        }
+
+        SendDieRpc();
     }
 
     private void DieLocal()
@@ -444,17 +377,14 @@ public class PlayerControl : NetworkBehaviour
         }
     }
 
-    [ServerRpc]
-    private void DieServerRpc()
+    [Rpc(SendTo.NotMe)]
+    private void SendDieRpc()
     {
-        transform.SetParent(null);
-        DieLocal();
-        DieClientRpc();
-    }
+        if (IsServer)
+        {
+            transform.SetParent(null); // Only server can set parent
+        }
 
-    [ClientRpc]
-    private void DieClientRpc()
-    {
         DieLocal();
     }
 
@@ -487,47 +417,21 @@ public class PlayerControl : NetworkBehaviour
         }
     }
 
-    [ServerRpc]
-    private void MoveServerRpc(Vector3 input)
+    [Rpc(SendTo.NotMe)]
+    private void SendMoveRpc(Vector3 input)
     {
         moveInput = input;
-        MoveClientRpc(input);
     }
 
-    [ClientRpc(RequireOwnership = false)]
-    private void MoveClientRpc(Vector3 input)
-    {
-        if (!IsOwner)
-            moveInput = input;
-    }
-
-    [ServerRpc]
-    private void JumpServerRpc()
+    [Rpc(SendTo.NotMe)]
+    private void SendJumpRpc()
     {
         Rigidbody.linearVelocity -= networkGravity.GetDirection() * jumpVelocity;
-        JumpClientRpc();
     }
 
-    [ClientRpc(RequireOwnership = false)]
-    private void JumpClientRpc()
-    {
-        if (!IsOwner && !IsServer)
-            Rigidbody.linearVelocity -= networkGravity.GetDirection() * jumpVelocity;
-    }
-
-    [ServerRpc(RequireOwnership = false)]
-    private void SyncPositionServerRpc(Vector3 position)
+    [Rpc(SendTo.NotMe)]
+    private void SendPositionRpc(Vector3 position)
     {
         transform.position = position;
-        SyncPositionClientRpc(position);
-    }
-
-    [ClientRpc(RequireOwnership = false)]
-    private void SyncPositionClientRpc(Vector3 position)
-    {
-        if (!IsOwner)
-        {
-            transform.position = position;
-        }
     }
 }

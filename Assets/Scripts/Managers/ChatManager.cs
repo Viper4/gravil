@@ -3,6 +3,7 @@ using System.Linq;
 using Unity.Services.Vivox;
 using UnityEngine;
 using System.Collections.Generic;
+using Unity.Services.Core;
 
 public class ChatManager : MonoBehaviour
 {

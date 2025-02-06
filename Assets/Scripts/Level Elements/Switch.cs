@@ -90,28 +90,13 @@ public class Switch : NetworkBehaviour
             newState = Mathf.Clamp(newState, 0, totalStates - 1);
         }
 
-        if (IsServer)
-        {
-            SetStateClientRpc(newState);
-            UpdateLocalState(newState);
-        }
-        else
-        {
-            SetStateServerRpc(newState);
-        }
+        UpdateLocalState(newState);
+        SendStateRpc(newState);
     }
 
-    [ClientRpc(RequireOwnership = false)]
-    private void SetStateClientRpc(int newState)
+    [Rpc(SendTo.NotMe)]
+    private void SendStateRpc(int newState)
     {
-        if(!IsServer)
-            UpdateLocalState(newState);
-    }
-
-    [ServerRpc(RequireOwnership = false)]
-    private void SetStateServerRpc(int newState)
-    {
-        SetStateClientRpc(newState);
         UpdateLocalState(newState);
     }
 
@@ -123,28 +108,13 @@ public class Switch : NetworkBehaviour
     public void SetStateSilent(int newState)
     {
         newState = Mathf.Clamp(newState, 0, totalStates - 1);
-        if (IsServer)
-        {
-            SetStateSilentClientRpc(newState);
-            UpdateLocalStateSilent(newState);
-        }
-        else
-        {
-            SetStateSilentServerRpc(newState);
-        }
+        SendStateSilentRpc(newState);
+        UpdateLocalStateSilent(newState);
     }
 
-    [ClientRpc(RequireOwnership = false)]
-    private void SetStateSilentClientRpc(int newState)
+    [Rpc(SendTo.NotMe)]
+    private void SendStateSilentRpc(int newState)
     {
-        if (!IsServer)
-            UpdateLocalStateSilent(newState);
-    }
-
-    [ServerRpc(RequireOwnership = false)]
-    private void SetStateSilentServerRpc(int newState)
-    {
-        SetStateSilentClientRpc(newState);
         UpdateLocalStateSilent(newState);
     }
 }
