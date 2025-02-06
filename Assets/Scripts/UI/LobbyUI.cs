@@ -33,9 +33,8 @@ public class LobbyUI : MonoBehaviour
     [SerializeField] private float listRefreshRate = 15f;
     private float refreshTimer = 0f;
     [SerializeField] private TMP_Dropdown regionDropdown;
-    private string[] regions = new string[]
+    private readonly string[] regions = new string[]
     {
-        null,
         "us-east1",
         "us-central1",
         "us-west1",
@@ -71,6 +70,7 @@ public class LobbyUI : MonoBehaviour
         toggleCreateButton.onClick.AddListener(ToggleCreateLobby);
         refreshButton.onClick.AddListener(RefreshLobbyList);
         regionDropdown.onValueChanged.AddListener(ctx => LobbyManager.Instance.SetRegion(regions[ctx]));
+        LobbyManager.Instance.SetRegion(regions[regionDropdown.value]);
 
         lobbyCodeInput.onValueChanged.AddListener(ctx => JoinInputFieldChanged());
         joinLobbyByCodeButton.onClick.AddListener(JoinLobbyByCode);
