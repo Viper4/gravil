@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Unity.Netcode.Transports.UTP;
 using System.Collections;
 using UnityEngine.SceneManagement;
+using Unity.Networking.Transport.Relay;
 
 public class LobbyManager : MonoBehaviour
 {
@@ -76,7 +77,6 @@ public class LobbyManager : MonoBehaviour
         }
 
         SceneManager.sceneLoaded += OnSceneLoaded;
-
         await UnityServices.InitializeAsync();
 
         AuthenticationService.Instance.SignedIn += OnSignIn;
@@ -211,12 +211,12 @@ public class LobbyManager : MonoBehaviour
                 }
             });
 
-            NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(
-                allocation.RelayServer.IpV4, 
-                (ushort)allocation.RelayServer.Port, 
-                allocation.AllocationIdBytes, 
-                allocation.Key, 
-                allocation.ConnectionData);
+            UnityTransport unityTransport = NetworkManager.Singleton.GetComponent<UnityTransport>();
+            unityTransport.UseWebSockets = true;
+            unityTransport.UseEncryption = true;
+            RelayServerData data = new RelayServerData(allocation, "wss");
+
+            unityTransport.SetRelayServerData(data);
 
             OnJoinLobby?.Invoke(joinedLobby.Id);
 
@@ -277,13 +277,12 @@ public class LobbyManager : MonoBehaviour
     private async void JoinLobbyRelay(Lobby lobby)
     {
         JoinAllocation joinAllocation = await JoinRelay(lobby.Data[RELAY_JOIN_CODE_KEY].Value);
-        NetworkManager.Singleton.GetComponent<UnityTransport>().SetClientRelayData(
-            joinAllocation.RelayServer.IpV4,
-            (ushort)joinAllocation.RelayServer.Port,
-            joinAllocation.AllocationIdBytes,
-            joinAllocation.Key,
-            joinAllocation.ConnectionData,
-            joinAllocation.HostConnectionData);
+        UnityTransport unityTransport = NetworkManager.Singleton.GetComponent<UnityTransport>();
+        unityTransport.UseWebSockets = true;
+        unityTransport.UseEncryption = true;
+        RelayServerData data = new RelayServerData(joinAllocation, "wss");
+
+        unityTransport.SetRelayServerData(data);
 
         AddLobbyListeners(joinedLobby);
 
