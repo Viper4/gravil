@@ -3951,8 +3951,8 @@ MonoBehaviour:
   canLock: 1
   lockOffset: 0
   audioSource: {fileID: 4791430845982996326}
-  changeDirectionClip: {fileID: 0}
-  lockedClip: {fileID: 0}
+  changeDirectionClip: {fileID: 8300000, guid: 9a6e50ef10f854f449b3150c29c074ae, type: 3}
+  lockedClip: {fileID: 8300000, guid: 65406d12ae41d1d4faa1b56376333957, type: 3}
   directionIndicator: {fileID: 4347030513617473420}
   reticle: {fileID: 4149883865452969415}
   indicatorDirections:

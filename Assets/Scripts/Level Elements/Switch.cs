@@ -74,6 +74,9 @@ public class Switch : NetworkBehaviour
 
     public void SetState(int newState)
     {
+        if (state == newState)
+            return;
+
         if (wrapAround)
         {
             if(newState > totalStates - 1)
