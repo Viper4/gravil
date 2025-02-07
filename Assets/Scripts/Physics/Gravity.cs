@@ -32,6 +32,8 @@ public class Gravity : MonoBehaviour
 
     public LayerMask collisionLayers;
 
+    private float timeSinceSwitch = 0f;
+
     private void Start()
     {
         Rigidbody = GetComponent<Rigidbody>();
@@ -56,6 +58,7 @@ public class Gravity : MonoBehaviour
         direction = gravityLock.GetDirection(lockOffset);
         UpdateDirectionIndicator();
         gravityLock.OnDirectionChanged += GravityLockDirectionChange;
+        OnLockChanged?.Invoke(direction);
         IsLocked = true;
     }
 
@@ -131,15 +134,17 @@ public class Gravity : MonoBehaviour
         return direction;
     }
 
-    public bool SetDirection(Vector3 direction)
+    public void SetDirection(Vector3 direction)
     {
-        if (audioSource != null)
+        if (audioSource != null && this.direction != direction && Time.time - timeSinceSwitch > 0.01f)
+        {
             audioSource.PlayOneShot(changeDirectionClip);
+            timeSinceSwitch = Time.time;
+        }
 
         this.direction = direction;
 
         UpdateDirectionIndicator();
-        return true;
     }
 
     private void GravityLockDirectionChange(int index)

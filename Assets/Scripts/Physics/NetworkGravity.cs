@@ -37,8 +37,6 @@ public class NetworkGravity : NetworkBehaviour
             return;
 
         gravity.CheckColliderEnter(other);
-        Vector3 newDirection = gravity.GetDirection();
-        SetDirection(newDirection);
     }
 
     private void OnTriggerExit(Collider other)
@@ -67,8 +65,6 @@ public class NetworkGravity : NetworkBehaviour
         }
         else 
         {
-            gravity.SetDirection(direction);
-
             directionX.Value = direction.x;
             directionY.Value = direction.y;
             directionZ.Value = direction.z;

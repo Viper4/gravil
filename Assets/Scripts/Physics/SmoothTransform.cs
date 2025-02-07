@@ -36,27 +36,29 @@ public class SmoothTransform : NetworkBehaviour
         {
             if (worldSpace)
             {
-                transform.position = Vector3.MoveTowards(transform.position, targetPosition, moveSpeed * Time.deltaTime);
                 if (transform.position == targetPosition)
                 {
-                    if(!reachedPosition)
+                    transform.position = targetPosition;
+                    if (!reachedPosition)
                         ReachedPosition();
                 }
                 else
                 {
+                    transform.position = Vector3.MoveTowards(transform.position, targetPosition, moveSpeed * Time.deltaTime);
                     reachedPosition = false;
                 }
             }
             else
             {
-                transform.localPosition = Vector3.MoveTowards(transform.localPosition, targetPosition, moveSpeed * Time.deltaTime);
                 if (transform.localPosition == targetPosition)
                 {
-                    if(!reachedPosition)
+                    transform.localPosition = targetPosition;
+                    if (!reachedPosition)
                         ReachedPosition();
                 }
                 else
                 {
+                    transform.localPosition = Vector3.MoveTowards(transform.localPosition, targetPosition, moveSpeed * Time.deltaTime);
                     reachedPosition = false;
                 }
             }
@@ -66,27 +68,29 @@ public class SmoothTransform : NetworkBehaviour
         {
             if (worldSpace)
             {
-                transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotateSpeed * Time.deltaTime);
                 if (Quaternion.Angle(transform.rotation, targetRotation) < 0.1f)
                 {
-                    if(!reachedRotation)
+                    transform.rotation = targetRotation;
+                    if (!reachedRotation)
                         ReachedRotation();
                 }
                 else
                 {
+                    transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotateSpeed * Time.deltaTime);
                     reachedRotation = false;
                 }
             }
             else
             {
-                transform.localRotation = Quaternion.RotateTowards(transform.localRotation, targetRotation, rotateSpeed * Time.deltaTime);
                 if (Quaternion.Angle(transform.localRotation, targetRotation) < 0.1f)
                 {
-                    if(!reachedRotation)
+                    transform.localRotation = targetRotation;
+                    if (!reachedRotation)
                         ReachedRotation();
                 }
                 else
                 {
+                    transform.localRotation = Quaternion.RotateTowards(transform.localRotation, targetRotation, rotateSpeed * Time.deltaTime);
                     reachedRotation = false;
                 }
             }
