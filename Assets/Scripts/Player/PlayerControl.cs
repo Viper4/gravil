@@ -136,6 +136,12 @@ public class PlayerControl : NetworkBehaviour
         if (isDead)
             return;
 
+        if (networkGravity.gravity.IsLocked)
+        {
+            networkGravity.gravity.PlayLockedSound();
+            return;
+        }
+
         Vector3 newDirection = Vector3.zero;
         Vector3 cameraForward = Camera.main.transform.forward;
 
@@ -350,6 +356,8 @@ public class PlayerControl : NetworkBehaviour
         Rigidbody.linearVelocity = Vector3.zero;
 
         SendPositionRpc(transform.position);
+
+        EnablePhysics();
     }
 
     public void Die()
@@ -433,5 +441,17 @@ public class PlayerControl : NetworkBehaviour
     private void SendPositionRpc(Vector3 position)
     {
         transform.position = position;
+    }
+
+    public void EnablePhysics()
+    {
+        Rigidbody.isKinematic = false;
+        playerCapsule.enabled = true;
+    }
+
+    public void DisablePhysics()
+    {
+        Rigidbody.isKinematic = true;
+        playerCapsule.enabled = false;
     }
 }

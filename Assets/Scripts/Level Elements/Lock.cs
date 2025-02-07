@@ -14,6 +14,7 @@ public class Lock : MonoBehaviour
         currentAmount++;
         if (currentAmount >= unlockAmount)
         {
+            currentAmount = unlockAmount;
             OnUnlock?.Invoke();
         }
     }
@@ -21,6 +22,10 @@ public class Lock : MonoBehaviour
     public void Remove()
     {
         currentAmount--;
+        if (currentAmount < 0)
+        {
+            currentAmount = 0;
+        }
         if (currentAmount < unlockAmount)
         {
             OnLock?.Invoke();

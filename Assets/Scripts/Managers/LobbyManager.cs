@@ -522,11 +522,13 @@ public class LobbyManager : MonoBehaviour
             levelIndex++;
             if (levelIndex >= SceneManager.sceneCountInBuildSettings - 2) // -2 for main menu and lobby
             {
+                PlayerControl.Instance.DisablePhysics();
                 NetworkManager.Singleton.SceneManager.LoadScene("Lobby", LoadSceneMode.Single);
                 OnGameComplete?.Invoke(timer); // Host wont receive OnSceneLoad event
             }
             else
             {
+                PlayerControl.Instance.DisablePhysics();
                 SceneLoader.Instance.ShowLoadingScreen($"Loading {levelName} {levelIndex}...");
                 NetworkManager.Singleton.SceneManager.LoadScene(levelName + " " + levelIndex, LoadSceneMode.Single);
             }

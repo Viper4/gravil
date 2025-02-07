@@ -133,13 +133,6 @@ public class Gravity : MonoBehaviour
 
     public bool SetDirection(Vector3 direction)
     {
-        if (IsLocked)
-        {
-            if(audioSource != null)
-                audioSource.PlayOneShot(lockedClip);
-            return false;
-        }
-
         if (audioSource != null)
             audioSource.PlayOneShot(changeDirectionClip);
 
@@ -162,5 +155,11 @@ public class Gravity : MonoBehaviour
             gravityLock.OnDirectionChanged -= GravityLockDirectionChange;
         IsLocked = false;
         gravityLock = null;
+    }
+
+    public void PlayLockedSound()
+    {
+        if (audioSource != null)
+            audioSource.PlayOneShot(lockedClip);
     }
 }

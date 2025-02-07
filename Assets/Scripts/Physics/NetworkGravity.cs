@@ -14,12 +14,12 @@ public class NetworkGravity : NetworkBehaviour
     {
         gravity = GetComponent<Gravity>();
 
-        gravity.OnLockChanged += SetNetworkDirection;
+        gravity.OnLockChanged += SetDirection;
     }
 
     private void OnDisable()
     {
-        gravity.OnLockChanged -= SetNetworkDirection;
+        gravity.OnLockChanged -= SetDirection;
     }
 
     private void Start()
@@ -38,7 +38,7 @@ public class NetworkGravity : NetworkBehaviour
 
         gravity.CheckColliderEnter(other);
         Vector3 newDirection = gravity.GetDirection();
-        SetNetworkDirection(newDirection);
+        SetDirection(newDirection);
     }
 
     private void OnTriggerExit(Collider other)
@@ -47,13 +47,6 @@ public class NetworkGravity : NetworkBehaviour
             return;
 
        gravity.CheckColliderExit(other);
-    }
-
-    private void SetNetworkDirection(Vector3 direction)
-    {
-        directionX.Value = direction.x;
-        directionY.Value = direction.y;
-        directionZ.Value = direction.z;
     }
 
     private void OnDirectionChanged()
@@ -74,12 +67,11 @@ public class NetworkGravity : NetworkBehaviour
         }
         else 
         {
-            if (gravity.SetDirection(direction))
-            {
-                directionX.Value = direction.x;
-                directionY.Value = direction.y;
-                directionZ.Value = direction.z;
-            }
+            gravity.SetDirection(direction);
+
+            directionX.Value = direction.x;
+            directionY.Value = direction.y;
+            directionZ.Value = direction.z;
         }
     }
 
