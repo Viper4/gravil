@@ -215,6 +215,15 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Screenshot"",
+                    ""type"": ""Button"",
+                    ""id"": ""e9f8a18d-d4c3-4f40-8582-5594165de475"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -688,6 +697,17 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": "";Keyboard&Mouse"",
                     ""action"": ""6"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""41f9c0ad-806d-4157-b00a-cd04943e6a2c"",
+                    ""path"": ""<Keyboard>/f2"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Screenshot"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -1356,6 +1376,7 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         m_Player__4 = m_Player.FindAction("4", throwIfNotFound: true);
         m_Player__5 = m_Player.FindAction("5", throwIfNotFound: true);
         m_Player__6 = m_Player.FindAction("6", throwIfNotFound: true);
+        m_Player_Screenshot = m_Player.FindAction("Screenshot", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_Navigate = m_UI.FindAction("Navigate", throwIfNotFound: true);
@@ -1459,6 +1480,7 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player__4;
     private readonly InputAction m_Player__5;
     private readonly InputAction m_Player__6;
+    private readonly InputAction m_Player_Screenshot;
     public struct PlayerActions
     {
         private @InputActions m_Wrapper;
@@ -1484,6 +1506,7 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         public InputAction @_4 => m_Wrapper.m_Player__4;
         public InputAction @_5 => m_Wrapper.m_Player__5;
         public InputAction @_6 => m_Wrapper.m_Player__6;
+        public InputAction @Screenshot => m_Wrapper.m_Player_Screenshot;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -1556,6 +1579,9 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
             @_6.started += instance.On_6;
             @_6.performed += instance.On_6;
             @_6.canceled += instance.On_6;
+            @Screenshot.started += instance.OnScreenshot;
+            @Screenshot.performed += instance.OnScreenshot;
+            @Screenshot.canceled += instance.OnScreenshot;
         }
 
         private void UnregisterCallbacks(IPlayerActions instance)
@@ -1623,6 +1649,9 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
             @_6.started -= instance.On_6;
             @_6.performed -= instance.On_6;
             @_6.canceled -= instance.On_6;
+            @Screenshot.started -= instance.OnScreenshot;
+            @Screenshot.performed -= instance.OnScreenshot;
+            @Screenshot.canceled -= instance.OnScreenshot;
         }
 
         public void RemoveCallbacks(IPlayerActions instance)
@@ -1850,6 +1879,7 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         void On_4(InputAction.CallbackContext context);
         void On_5(InputAction.CallbackContext context);
         void On_6(InputAction.CallbackContext context);
+        void OnScreenshot(InputAction.CallbackContext context);
     }
     public interface IUIActions
     {

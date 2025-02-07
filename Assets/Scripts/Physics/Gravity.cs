@@ -131,22 +131,14 @@ public class Gravity : MonoBehaviour
         return direction;
     }
 
-    public bool SetDirection(Vector3 direction)
+    public void SetDirection(Vector3 direction)
     {
-        if (IsLocked)
-        {
-            if(audioSource != null)
-                audioSource.PlayOneShot(lockedClip);
-            return false;
-        }
-
         if (audioSource != null)
             audioSource.PlayOneShot(changeDirectionClip);
 
         this.direction = direction;
 
         UpdateDirectionIndicator();
-        return true;
     }
 
     private void GravityLockDirectionChange(int index)
@@ -162,5 +154,11 @@ public class Gravity : MonoBehaviour
             gravityLock.OnDirectionChanged -= GravityLockDirectionChange;
         IsLocked = false;
         gravityLock = null;
+    }
+
+    public void PlayLockedSound()
+    {
+        if (audioSource != null)
+            audioSource.PlayOneShot(lockedClip);
     }
 }

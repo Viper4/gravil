@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [RequireComponent(typeof(NetworkGravity))]
-public class GravitySwitch : MonoBehaviour
+public class GravityToggle : MonoBehaviour
 {
     private NetworkGravity networkGravity;
 

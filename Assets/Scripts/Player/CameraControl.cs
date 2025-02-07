@@ -29,7 +29,6 @@ public class CameraControl : MonoBehaviour
 
     private void Start()
     {
-        Screen.fullScreenMode = FullScreenMode.Windowed;
         // If target is not set, automatically set it to the parent
         if (target == null)
         {

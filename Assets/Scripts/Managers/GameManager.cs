@@ -1,4 +1,8 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -16,9 +20,12 @@ public class GameManager : MonoBehaviour
 
     public InputActions inputActions;
 
+    [SerializeField] private GameObject screenshotUI;
+    [SerializeField] private TextMeshProUGUI screenshotText;
+
     private void OnEnable()
     {
-        if(Instance == null)
+        if (Instance == null)
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
@@ -36,7 +43,10 @@ public class GameManager : MonoBehaviour
 
     private void OnDisable()
     {
-        inputActions.Disable();
+        if (inputActions != null)
+        {
+            inputActions.Disable();
+        }
     }
 
     private void Update()
@@ -53,11 +63,33 @@ public class GameManager : MonoBehaviour
                 Screen.fullScreenMode = FullScreenMode.MaximizedWindow;
             }
         }
+
+        if (inputActions.Player.Screenshot.triggered)
+        {
+            DateTime dateTime = DateTime.Now;
+            if (!Directory.Exists($"\\Screenshots\\"))
+            {
+                Directory.CreateDirectory(Directory.GetCurrentDirectory() + "\\Screenshots\\");
+            }
+            string path = Directory.GetCurrentDirectory().Replace("\\", "/") + $"/Screenshots/{dateTime.Year}-{dateTime.Month}-{dateTime.Day}_{dateTime.Hour}.{dateTime.Minute}.{dateTime.Second}.png";
+            Debug.Log("Screenshot saved to: " + path);
+            ScreenCapture.CaptureScreenshot(path);
+            StartCoroutine(ScreenshotPopup(path));
+        }
     }
 
     public void OnSceneLoad()
     {
         gravityLocks.Clear();
         gravityLocks.AddRange(FindObjectsByType<GravityLock>(FindObjectsSortMode.None));
+    }
+
+    private IEnumerator ScreenshotPopup(string path)
+    {
+        yield return new WaitForEndOfFrame(); // Wait for screenshot
+        screenshotUI.SetActive(true);
+        screenshotText.text = "Saved to " + path;
+        yield return new WaitForSeconds(2.5f);
+        screenshotUI.SetActive(false);
     }
 }

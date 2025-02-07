@@ -45596,11 +45596,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8089346388262168736, guid: f60e76d12c58c4d49aab08131c298887, type: 3}
       propertyPath: OnStartPress.m_PersistentCalls.m_Calls.Array.size
-      value: 3
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 8089346388262168736, guid: f60e76d12c58c4d49aab08131c298887, type: 3}
       propertyPath: OnStartRelease.m_PersistentCalls.m_Calls.Array.size
-      value: 3
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 8089346388262168736, guid: f60e76d12c58c4d49aab08131c298887, type: 3}
       propertyPath: OnEndPress.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
@@ -47603,7 +47603,6 @@ MonoBehaviour:
     m_InternalValue: 0
   directionZ:
     m_InternalValue: 0
-  directions: {x: 0, y: 0, z: 0}
 --- !u!114 &9052639530965541773
 MonoBehaviour:
   m_ObjectHideFlags: 0

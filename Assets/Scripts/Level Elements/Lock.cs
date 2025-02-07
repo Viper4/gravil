@@ -1,7 +1,9 @@
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Rendering;
 
-public class Lock : MonoBehaviour
+public class Lock : NetworkBehaviour
 {
     [SerializeField] private UnityEvent OnUnlock;
     [SerializeField] private UnityEvent OnLock;
@@ -14,6 +16,7 @@ public class Lock : MonoBehaviour
         currentAmount++;
         if (currentAmount >= unlockAmount)
         {
+            currentAmount = unlockAmount;
             OnUnlock?.Invoke();
         }
     }
@@ -21,6 +24,10 @@ public class Lock : MonoBehaviour
     public void Remove()
     {
         currentAmount--;
+        if(currentAmount < 0)
+        {
+            currentAmount = 0;
+        }
         if (currentAmount < unlockAmount)
         {
             OnLock?.Invoke();

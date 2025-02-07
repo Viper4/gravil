@@ -81,6 +81,8 @@ public class LobbyManager : MonoBehaviour
 
         AuthenticationService.Instance.SignedIn += OnSignIn;
         await AuthenticationService.Instance.SignInAnonymouslyAsync();
+
+        NetworkManager.Singleton.OnTransportFailure += OnTransportFailure;
     }
 
     private void Update()
@@ -127,7 +129,7 @@ public class LobbyManager : MonoBehaviour
 
     private void OnSignIn()
     {
-        Debug.Log("Signed in " + AuthenticationService.Instance.PlayerId);
+        Debug.Log("Signed in with PlayerId: " + AuthenticationService.Instance.PlayerId);
     }
 
     private async void AddLobbyListeners(Lobby lobby)
@@ -523,11 +525,13 @@ public class LobbyManager : MonoBehaviour
             levelIndex++;
             if (levelIndex >= SceneManager.sceneCountInBuildSettings - 2) // -2 for main menu and lobby
             {
+                PlayerControl.Instance.DisablePhysics();
                 NetworkManager.Singleton.SceneManager.LoadScene("Lobby", LoadSceneMode.Single);
                 OnGameComplete?.Invoke(timer); // Host wont receive OnSceneLoad event
             }
             else
             {
+                PlayerControl.Instance.DisablePhysics();
                 SceneLoader.Instance.ShowLoadingScreen($"Loading {levelName} {levelIndex}...");
                 NetworkManager.Singleton.SceneManager.LoadScene(levelName + " " + levelIndex, LoadSceneMode.Single);
             }
@@ -578,5 +582,11 @@ public class LobbyManager : MonoBehaviour
         SceneLoader.Instance.LoadScene("Main Menu");
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
+    }
+
+    private void OnTransportFailure()
+    {
+        Debug.LogWarning("Unity Transport Failure! Disconnecting...");
+        StartCoroutine(ShutdownLoadMainMenu());
     }
 }

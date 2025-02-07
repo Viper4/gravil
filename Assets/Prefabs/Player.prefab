@@ -3992,7 +3992,6 @@ MonoBehaviour:
     m_InternalValue: -1
   directionZ:
     m_InternalValue: 0
-  directions: {x: 0, y: 0, z: 0}
 --- !u!114 &6282288956281072693
 MonoBehaviour:
   m_ObjectHideFlags: 0
