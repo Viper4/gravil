@@ -129,7 +129,7 @@ public class Interactable : MonoBehaviour
             }
             else
             {
-                grabbableRigidbody.SetParentNullServerRpc();
+                grabbableRigidbody.SetParentNullRpc();
             }
         }
 

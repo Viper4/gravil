@@ -27,6 +27,8 @@ public class CameraControl : MonoBehaviour
 
     private Vector3 lastParentUp;
 
+    private bool cursorLockToggle = false;
+
     private void Start()
     {
         // If target is not set, automatically set it to the parent
@@ -40,6 +42,11 @@ public class CameraControl : MonoBehaviour
     {
         if (!PlayerControl.Instance.IsPaused)
         {
+            if (GameManager.Instance.inputActions.Player.LockCursor.triggered)
+            {
+                cursorLockToggle = !cursorLockToggle;
+            }
+
             // Translating inputs from mouse into smoothed rotation of camera
             Vector2 look = GameManager.Instance.inputActions.Player.Look.ReadValue<Vector2>();
             yaw += look.x * sensitivity;
@@ -73,7 +80,14 @@ public class CameraControl : MonoBehaviour
             }
             else
             {
-                Cursor.lockState = CursorLockMode.Confined;
+                if (cursorLockToggle)
+                {
+                    Cursor.lockState = CursorLockMode.Locked;
+                }
+                else
+                {
+                    Cursor.lockState = CursorLockMode.Confined;
+                }
                 reticle.position = GameManager.Instance.inputActions.UI.Point.ReadValue<Vector2>();
                 pitch = Mathf.Clamp(pitch, pitchMinMax3rdPerson.x, pitchMinMax3rdPerson.y);
                 currentRotation.x = Mathf.Clamp(currentRotation.x, pitchMinMax3rdPerson.x, pitchMinMax3rdPerson.y);

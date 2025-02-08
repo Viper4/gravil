@@ -50,12 +50,12 @@ public class GrabbableRigidbody : NetworkBehaviour
     {
         if (isGrabbed.Value)
         {
+            attachedRigidbody.isKinematic = true;
             if (gameObject.layer != grabbedLayer)
             {
                 if (setColliderEnabled)
                     _collider.enabled = false;
                 popup.Hide();
-                attachedRigidbody.isKinematic = true;
                 gameObject.layer = grabbedLayer;
             }
             
@@ -131,8 +131,8 @@ public class GrabbableRigidbody : NetworkBehaviour
         }
     }
 
-    [ServerRpc(RequireOwnership = false)]
-    private void SetGrabServerRpc(bool isGrabbed, string playerId)
+    [Rpc(SendTo.Server)]
+    private void SetGrabRpc(bool isGrabbed, string playerId)
     {
         this.isGrabbed.Value = isGrabbed;
         grabbedPlayerId.Value = playerId;
@@ -157,12 +157,12 @@ public class GrabbableRigidbody : NetworkBehaviour
         }
         else
         {
-            SetGrabServerRpc(true, playerId);
+            SetGrabRpc(true, playerId);
         }
     }
 
-    [ServerRpc(RequireOwnership = false)]
-    private void ReleaseServerRpc()
+    [Rpc(SendTo.Server)]
+    private void SendReleaseRpc()
     {
         isGrabbed.Value = false;
         grabbedPlayerId.Value = string.Empty;
@@ -178,12 +178,12 @@ public class GrabbableRigidbody : NetworkBehaviour
         }
         else
         {
-            ReleaseServerRpc();
+            SendReleaseRpc();
         }
     }
 
-    [ServerRpc(RequireOwnership = false)]
-    public void SetParentNullServerRpc()
+    [Rpc(SendTo.Server)]
+    public void SetParentNullRpc()
     {
         transform.SetParent(null);
     }

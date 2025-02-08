@@ -215,6 +215,15 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""LockCursor"",
+                    ""type"": ""Button"",
+                    ""id"": ""2418c287-9520-473d-beca-07418d121a48"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -688,6 +697,17 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": "";Keyboard&Mouse"",
                     ""action"": ""6"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""bc0ad26c-efa9-4587-9cf0-b50778c2c307"",
+                    ""path"": ""<Keyboard>/shift"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""LockCursor"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -1356,6 +1376,7 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         m_Player__4 = m_Player.FindAction("4", throwIfNotFound: true);
         m_Player__5 = m_Player.FindAction("5", throwIfNotFound: true);
         m_Player__6 = m_Player.FindAction("6", throwIfNotFound: true);
+        m_Player_LockCursor = m_Player.FindAction("LockCursor", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_Navigate = m_UI.FindAction("Navigate", throwIfNotFound: true);
@@ -1459,6 +1480,7 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player__4;
     private readonly InputAction m_Player__5;
     private readonly InputAction m_Player__6;
+    private readonly InputAction m_Player_LockCursor;
     public struct PlayerActions
     {
         private @InputActions m_Wrapper;
@@ -1484,6 +1506,7 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         public InputAction @_4 => m_Wrapper.m_Player__4;
         public InputAction @_5 => m_Wrapper.m_Player__5;
         public InputAction @_6 => m_Wrapper.m_Player__6;
+        public InputAction @LockCursor => m_Wrapper.m_Player_LockCursor;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -1556,6 +1579,9 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
             @_6.started += instance.On_6;
             @_6.performed += instance.On_6;
             @_6.canceled += instance.On_6;
+            @LockCursor.started += instance.OnLockCursor;
+            @LockCursor.performed += instance.OnLockCursor;
+            @LockCursor.canceled += instance.OnLockCursor;
         }
 
         private void UnregisterCallbacks(IPlayerActions instance)
@@ -1623,6 +1649,9 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
             @_6.started -= instance.On_6;
             @_6.performed -= instance.On_6;
             @_6.canceled -= instance.On_6;
+            @LockCursor.started -= instance.OnLockCursor;
+            @LockCursor.performed -= instance.OnLockCursor;
+            @LockCursor.canceled -= instance.OnLockCursor;
         }
 
         public void RemoveCallbacks(IPlayerActions instance)
@@ -1850,6 +1879,7 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         void On_4(InputAction.CallbackContext context);
         void On_5(InputAction.CallbackContext context);
         void On_6(InputAction.CallbackContext context);
+        void OnLockCursor(InputAction.CallbackContext context);
     }
     public interface IUIActions
     {

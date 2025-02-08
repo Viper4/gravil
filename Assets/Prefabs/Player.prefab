@@ -3252,7 +3252,7 @@ MonoBehaviour:
   dstFromTarget: 10
   targetDstMinMax: {x: 0, y: 30}
   pitchMinMax3rdPerson: {x: -89, y: 89}
-  pitchMinMax1stPerson: {x: -80, y: 80}
+  pitchMinMax1stPerson: {x: -89, y: 89}
   cameraSmoothing: 1
   rotationSmoothing: 0.05
   ignoreLayers:
@@ -3319,7 +3319,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &8385591283621747728
 Transform:
   m_ObjectHideFlags: 0
