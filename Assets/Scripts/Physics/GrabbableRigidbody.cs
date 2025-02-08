@@ -50,15 +50,15 @@ public class GrabbableRigidbody : NetworkBehaviour
     {
         if (isGrabbed.Value)
         {
+            attachedRigidbody.isKinematic = true;
             if (gameObject.layer != grabbedLayer)
             {
                 if (setColliderEnabled)
                     _collider.enabled = false;
                 popup.Hide();
-                attachedRigidbody.isKinematic = true;
                 gameObject.layer = grabbedLayer;
             }
-            
+
             if (grabbedPlayerId.Value.Length > 0)
             {
                 string grabberId = grabbedPlayerId.Value.ToString();
@@ -74,7 +74,7 @@ public class GrabbableRigidbody : NetworkBehaviour
                         transform.position = player.playerModel.position + player.playerModel.forward * grabDistance;
                     }
                 }
-                
+
                 if (PlayerControl.Instance.playerId == grabberId)
                 {
                     if (GameManager.Instance.inputActions.Player.Interact.triggered || PlayerControl.Instance.isDead)
@@ -86,7 +86,7 @@ public class GrabbableRigidbody : NetworkBehaviour
         }
         else
         {
-            if(gameObject.layer != originalLayer)
+            if (gameObject.layer != originalLayer)
             {
                 if (setColliderEnabled)
                     _collider.enabled = true;
@@ -131,8 +131,8 @@ public class GrabbableRigidbody : NetworkBehaviour
         }
     }
 
-    [ServerRpc(RequireOwnership = false)]
-    private void SetGrabServerRpc(bool isGrabbed, string playerId)
+    [Rpc(SendTo.Server)]
+    private void SetGrabRpc(bool isGrabbed, string playerId)
     {
         this.isGrabbed.Value = isGrabbed;
         grabbedPlayerId.Value = playerId;
@@ -157,12 +157,12 @@ public class GrabbableRigidbody : NetworkBehaviour
         }
         else
         {
-            SetGrabServerRpc(true, playerId);
+            SetGrabRpc(true, playerId);
         }
     }
 
-    [ServerRpc(RequireOwnership = false)]
-    private void ReleaseServerRpc()
+    [Rpc(SendTo.Server)]
+    private void SendReleaseRpc()
     {
         isGrabbed.Value = false;
         grabbedPlayerId.Value = string.Empty;
@@ -178,12 +178,12 @@ public class GrabbableRigidbody : NetworkBehaviour
         }
         else
         {
-            ReleaseServerRpc();
+            SendReleaseRpc();
         }
     }
 
-    [ServerRpc(RequireOwnership = false)]
-    public void SetParentNullServerRpc()
+    [Rpc(SendTo.Server)]
+    public void SetParentNullRpc()
     {
         transform.SetParent(null);
     }

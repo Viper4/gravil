@@ -37,7 +37,7 @@ public class Interactable : MonoBehaviour
 
     public void ForceRemoveInteract()
     {
-        if(interactedButton != null)
+        if (interactedButton != null)
         {
             interactedButton.RemoveObject(this);
         }
@@ -58,7 +58,7 @@ public class Interactable : MonoBehaviour
         if (attachedRigidbody != null)
         {
             attachedRigidbody.isKinematic = !value;
-            if(value)
+            if (value)
             {
                 attachedRigidbody.linearVelocity = Vector3.zero;
             }
@@ -129,7 +129,7 @@ public class Interactable : MonoBehaviour
             }
             else
             {
-                grabbableRigidbody.SetParentNullServerRpc();
+                grabbableRigidbody.SetParentNullRpc();
             }
         }
 
@@ -137,7 +137,7 @@ public class Interactable : MonoBehaviour
         {
             StartCoroutine(ToggleActive(false));
 
-            if(respawnDelay >= 0)
+            if (respawnDelay >= 0)
                 Invoke(nameof(Respawn), respawnDelay);
         }
         else
