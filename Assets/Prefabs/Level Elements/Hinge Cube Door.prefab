@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 3198810544842095448}
   - component: {fileID: 8426810889081363754}
   m_Layer: 8
-  m_Name: Cylinder
+  m_Name: Cube
   m_TagString: Tile
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

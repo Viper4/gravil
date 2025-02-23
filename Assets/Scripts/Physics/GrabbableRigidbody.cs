@@ -1,5 +1,6 @@
 using Unity.Collections;
 using Unity.Netcode;
+using Unity.Netcode.Components;
 using UnityEngine;
 
 public class GrabbableRigidbody : NetworkBehaviour
@@ -10,7 +11,7 @@ public class GrabbableRigidbody : NetworkBehaviour
     private Interactable interactable;
 
     private bool ownerInTrigger;
-    [SerializeField] private NetworkVariable<bool> isGrabbed = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    private bool isGrabbed = false;
 
     [SerializeField] private float grabDistance = 0.5f;
 
@@ -24,17 +25,11 @@ public class GrabbableRigidbody : NetworkBehaviour
     private int originalLayer;
     [SerializeField] private int grabbedLayer = 2;
 
-    private NetworkVariable<FixedString64Bytes> grabbedPlayerId = new NetworkVariable<FixedString64Bytes>(string.Empty, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    private string grabberId;
 
-    private void OnEnable()
-    {
-        isGrabbed.OnValueChanged += OnIsGrabbedChanged;
-    }
+    private NetworkTransform networkTransform;
 
-    private void OnDisable()
-    {
-        isGrabbed.OnValueChanged -= OnIsGrabbedChanged;
-    }
+    private Vector3 previousPosition;
 
     private void Start()
     {
@@ -42,13 +37,20 @@ public class GrabbableRigidbody : NetworkBehaviour
         attachedRigidbody = GetComponent<Rigidbody>();
         _collider = GetComponent<Collider>();
         interactable = GetComponent<Interactable>();
+        networkTransform = GetComponent<NetworkTransform>();
         extents = _collider.bounds.extents.z;
         originalLayer = gameObject.layer;
     }
 
+    private void FixedUpdate()
+    {
+        if (isGrabbed)
+            previousPosition = transform.position;
+    }
+
     private void Update()
     {
-        if (isGrabbed.Value)
+        if (isGrabbed)
         {
             attachedRigidbody.isKinematic = true;
             if (gameObject.layer != grabbedLayer)
@@ -57,12 +59,13 @@ public class GrabbableRigidbody : NetworkBehaviour
                     _collider.enabled = false;
                 popup.Hide();
                 gameObject.layer = grabbedLayer;
+
+                networkTransform.enabled = false;
             }
 
-            if (grabbedPlayerId.Value.Length > 0)
+            if (grabberId.Length > 0)
             {
-                string grabberId = grabbedPlayerId.Value.ToString();
-                if (IsOwner)
+                if (GameManager.Instance.players.ContainsKey(grabberId) && GameManager.Instance.players[grabberId] != null)
                 {
                     PlayerControl player = GameManager.Instance.players[grabberId];
                     if (Physics.Raycast(player.playerModel.position, player.playerModel.forward, out RaycastHit hit, grabDistance + extents, solidLayers))
@@ -73,13 +76,24 @@ public class GrabbableRigidbody : NetworkBehaviour
                     {
                         transform.position = player.playerModel.position + player.playerModel.forward * grabDistance;
                     }
-                }
 
-                if (PlayerControl.Instance.playerId == grabberId)
+                    if (PlayerControl.Instance.playerId == grabberId)
+                    {
+                        if (GameManager.Instance.inputActions.Player.Interact.triggered || PlayerControl.Instance.isDead)
+                        {
+                            Release();
+                        }
+                    }
+                }
+                else
                 {
-                    if (GameManager.Instance.inputActions.Player.Interact.triggered || PlayerControl.Instance.isDead)
+                    if (IsServer)
                     {
                         Release();
+                    }
+                    else
+                    {
+                        RequestGrabberIdRpc();
                     }
                 }
             }
@@ -91,6 +105,8 @@ public class GrabbableRigidbody : NetworkBehaviour
                 if (setColliderEnabled)
                     _collider.enabled = true;
                 gameObject.layer = originalLayer;
+
+                networkTransform.enabled = true;
             }
 
             if (ownerInTrigger && PlayerControl.Instance.HoveredObject == transform && !PlayerControl.Instance.isDead)
@@ -110,7 +126,7 @@ public class GrabbableRigidbody : NetworkBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!isGrabbed.Value && !other.isTrigger && other.CompareTag("Player"))
+        if (!isGrabbed && !other.isTrigger && other.CompareTag("Player"))
         {
             if (other.attachedRigidbody.GetComponent<PlayerControl>().IsOwner)
             {
@@ -121,7 +137,7 @@ public class GrabbableRigidbody : NetworkBehaviour
 
     private void OnTriggerExit(Collider other)
     {
-        if (!isGrabbed.Value && !other.isTrigger && other.CompareTag("Player"))
+        if (!isGrabbed && !other.isTrigger && other.CompareTag("Player"))
         {
             if (other.attachedRigidbody.GetComponent<PlayerControl>().IsOwner)
             {
@@ -131,16 +147,17 @@ public class GrabbableRigidbody : NetworkBehaviour
         }
     }
 
-    [Rpc(SendTo.Server)]
+    [Rpc(SendTo.NotMe)]
     private void SetGrabRpc(bool isGrabbed, string playerId)
     {
-        this.isGrabbed.Value = isGrabbed;
-        grabbedPlayerId.Value = playerId;
+        this.isGrabbed = isGrabbed;
+        grabberId = playerId;
     }
 
     public void Grab(string playerId)
     {
-        PlayerControl.Instance.OnRespawn += Release;
+        if (grabberId == PlayerControl.Instance.playerId)
+            PlayerControl.Instance.OnRespawn += Release;
         if (interactable != null)
         {
             interactable.ForceRemoveInteract();
@@ -150,36 +167,32 @@ public class GrabbableRigidbody : NetworkBehaviour
             networkRigidbodyTransfer.ChangeOwnership(GameManager.Instance.players[playerId].OwnerClientId);
         }
 
-        if (IsServer)
-        {
-            isGrabbed.Value = true;
-            grabbedPlayerId.Value = playerId;
-        }
-        else
-        {
-            SetGrabRpc(true, playerId);
-        }
+        isGrabbed = true;
+        grabberId = playerId;
+
+        SetGrabRpc(true, playerId);
     }
 
-    [Rpc(SendTo.Server)]
+    [Rpc(SendTo.NotMe)]
     private void SendReleaseRpc()
     {
-        isGrabbed.Value = false;
-        grabbedPlayerId.Value = string.Empty;
+        isGrabbed = false;
+        grabberId = string.Empty;
+        attachedRigidbody.isKinematic = false;
+        attachedRigidbody.linearVelocity = (transform.position - previousPosition) / Time.fixedDeltaTime;
     }
 
     public void Release()
     {
-        PlayerControl.Instance.OnRespawn -= Release;
-        if (IsServer)
-        {
-            isGrabbed.Value = false;
-            grabbedPlayerId.Value = string.Empty;
-        }
-        else
-        {
-            SendReleaseRpc();
-        }
+        if (grabberId == PlayerControl.Instance.playerId)
+            PlayerControl.Instance.OnRespawn -= Release;
+
+        isGrabbed = false;
+        grabberId = string.Empty;
+        attachedRigidbody.isKinematic = false;
+        attachedRigidbody.linearVelocity = (transform.position - previousPosition) / Time.fixedDeltaTime;
+
+        SendReleaseRpc();
     }
 
     [Rpc(SendTo.Server)]
@@ -188,12 +201,23 @@ public class GrabbableRigidbody : NetworkBehaviour
         transform.SetParent(null);
     }
 
-    private void OnIsGrabbedChanged(bool previousValue, bool newValue)
+    [Rpc(SendTo.Server)]
+    private void RequestGrabberIdRpc()
     {
-        if (IsOwner && previousValue && !newValue)
+        if (isGrabbed)
         {
-            attachedRigidbody.isKinematic = false;
-            attachedRigidbody.linearVelocity = PlayerControl.Instance.Rigidbody.linearVelocity;
+            if (GameManager.Instance.players.ContainsKey(grabberId))
+            {
+                SetGrabRpc(true, grabberId);
+            }
+            else
+            {
+                Release();
+            }
+        }
+        else
+        {
+            Release();
         }
     }
 }

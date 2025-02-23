@@ -32,13 +32,13 @@ public class PlayerSpawn : MonoBehaviour
 
     private void Update()
     {
-        if (GameManager.Instance.inputActions.Player.Reset.triggered)
+        if (GameManager.Instance.inputActions.Player.Reset.triggered && !PlayerControl.Instance.IsPaused)
         {
             PlayerControl.Instance.OnRespawn?.Invoke();
             ResetPlayer();
         }
     }
-    
+
     private IEnumerator ResetPlayerWait()
     {
         yield return new WaitWhile(() => PlayerControl.Instance == null);
@@ -48,7 +48,7 @@ public class PlayerSpawn : MonoBehaviour
     private void ResetPlayer()
     {
         PlayerControl.Instance.isGrounded = false;
-        if(defaultGravityDirection != Vector3.zero)
+        if (defaultGravityDirection != Vector3.zero)
         {
             PlayerControl.Instance.networkGravity.SetDirection(defaultGravityDirection);
         }

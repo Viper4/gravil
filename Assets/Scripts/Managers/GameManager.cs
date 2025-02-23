@@ -43,10 +43,7 @@ public class GameManager : MonoBehaviour
 
     private void OnDisable()
     {
-        if (inputActions != null)
-        {
-            inputActions.Disable();
-        }
+        inputActions?.Disable();
     }
 
     private void Update()

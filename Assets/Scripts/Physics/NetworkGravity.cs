@@ -31,24 +31,6 @@ public class NetworkGravity : NetworkBehaviour
         directionZ.OnValueChanged += (prevVal, newVal) => OnDirectionChanged();
     }
 
-    private void OnTriggerEnter(Collider other)
-    {
-        if (!IsOwner)
-            return;
-
-        gravity.CheckColliderEnter(other);
-        Vector3 newDirection = gravity.GetDirection();
-        SetDirection(newDirection);
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        if (!IsOwner)
-            return;
-
-       gravity.CheckColliderExit(other);
-    }
-
     private void OnDirectionChanged()
     {
         gravity.SetDirection(new Vector3(directionX.Value, directionY.Value, directionZ.Value));
@@ -65,7 +47,7 @@ public class NetworkGravity : NetworkBehaviour
         {
             RequestSetDirectionRpc(direction);
         }
-        else 
+        else
         {
             directionX.Value = direction.x;
             directionY.Value = direction.y;

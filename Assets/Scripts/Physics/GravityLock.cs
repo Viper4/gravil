@@ -26,15 +26,8 @@ public class GravityLock : MonoBehaviour
     public Vector3 GetDirection(int offset)
     {
         int offsetIndex = directionIndex + offset;
-        if (offsetIndex < 0)
-        {
-            offsetIndex = directions.Length - 1;
-        }
-        else if (offsetIndex >= directions.Length)
-        {
-            offsetIndex = 0;
-        }
-        return directions[offsetIndex];
+
+        return directions[offsetIndex % directions.Length];
     }
 
     public void SetDirection(int index)
@@ -50,15 +43,31 @@ public class GravityLock : MonoBehaviour
     public void IncrementDirection(int amount)
     {
         directionIndex += amount;
-        if(directionIndex < 0)
+        if (directionIndex < 0)
         {
             directionIndex = directions.Length - 1;
         }
-        else if(directionIndex >= directions.Length)
+        else if (directionIndex >= directions.Length)
         {
             directionIndex = 0;
         }
         direction = directions[directionIndex];
         OnDirectionChanged?.Invoke(directionIndex);
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (!other.isTrigger && (other.TryGetComponent(out Gravity otherGravity) || other.transform.parent.TryGetComponent(out otherGravity)))
+        {
+            otherGravity.SetGravityLock(this);
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (!other.isTrigger && (other.TryGetComponent(out Gravity otherGravity) || other.transform.parent.TryGetComponent(out otherGravity)))
+        {
+            otherGravity.TryRemoveGravityLock(this);
+        }
     }
 }

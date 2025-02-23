@@ -2654,7 +2654,7 @@ SphereCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -3192,7 +3192,7 @@ MonoBehaviour:
   dstFromTarget: 10
   targetDstMinMax: {x: 0, y: 30}
   pitchMinMax3rdPerson: {x: -89, y: 89}
-  pitchMinMax1stPerson: {x: -80, y: 80}
+  pitchMinMax1stPerson: {x: -89, y: 89}
   cameraSmoothing: 1
   rotationSmoothing: 0.05
   ignoreLayers:
@@ -3674,7 +3674,6 @@ GameObject:
   - component: {fileID: 769060220928426441}
   - component: {fileID: 3478332559051471824}
   - component: {fileID: 7401567204019517753}
-  - component: {fileID: 6282288956281072693}
   - component: {fileID: 1478837183671755085}
   - component: {fileID: 8647607998461161288}
   m_Layer: 6
@@ -3871,7 +3870,6 @@ MonoBehaviour:
   deathTime: 1
   dieEffectPrefab: {fileID: 1892116224983857932, guid: e3f6c17c00909944eb7a97a833fae725, type: 3}
   canRespawn: 1
-  cheatsEnabled: 0
 --- !u!114 &3478332559051471824
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3931,48 +3929,6 @@ MonoBehaviour:
     m_InternalValue: -1
   directionZ:
     m_InternalValue: 0
---- !u!114 &6282288956281072693
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5060850958413252943}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a369f806f4402a94ab37f9717ecb8d28, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ShowTopMostFoldoutHeaderGroup: 1
-  health:
-    m_InternalValue: 100
-  maxHealth:
-    m_InternalValue: 100
-  healthBarParent: {fileID: 1167405264551353267}
-  healthBar: {fileID: 4491385853362391480}
-  scaleAxis: 0
-  healthAnimator: {fileID: 1575652354875080062}
-  damageEffect: {fileID: 0}
-  OnDamage:
-    m_PersistentCalls:
-      m_Calls: []
-  minDamageSpeed: 20
-  speedDamageMultiplier: 2
-  OnDeath:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 769060220928426441}
-        m_TargetAssemblyTypeName: PlayerControl, Assembly-CSharp
-        m_MethodName: Die
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
 --- !u!114 &1478837183671755085
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5092,7 +5048,7 @@ GameObject:
   - component: {fileID: 881978201593628633}
   - component: {fileID: 8291482096965012677}
   - component: {fileID: 5115941062284187651}
-  - component: {fileID: 8726787703333209489}
+  - component: {fileID: 1725901748305304271}
   m_Layer: 0
   m_Name: Name Tag UI
   m_TagString: Untagged
@@ -5209,7 +5165,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   scaleFactor: 0.002
---- !u!114 &8726787703333209489
+--- !u!114 &1725901748305304271
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -6718,7 +6674,7 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -8638,7 +8594,7 @@ SphereCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3

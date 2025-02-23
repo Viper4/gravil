@@ -12,13 +12,12 @@ public class PlayerControl : NetworkBehaviour
 
     public Rigidbody Rigidbody { get; private set; }
     public NetworkGravity networkGravity;
-    private HealthSystem healthSystem;
     public Transform playerModel;
     private CapsuleCollider playerCapsule;
     public Interactable interactable;
     [SerializeField] private GameObject[] localOwnedObjects;
     [SerializeField] private MeshRenderer bodyRenderer;
-    [SerializeField] private MeshRenderer[] faceRenderers;
+    public MeshRenderer[] faceRenderers;
     [SerializeField] private TextMeshProUGUI nameText;
 
     public string playerId;
@@ -50,12 +49,9 @@ public class PlayerControl : NetworkBehaviour
     public Action OnDeath;
     public Action OnRespawn;
 
-    [SerializeField] private bool cheatsEnabled = false;
-
     private void Start()
     {
         Rigidbody = GetComponent<Rigidbody>();
-        healthSystem = GetComponent<HealthSystem>();
         playerCapsule = playerModel.GetComponent<CapsuleCollider>();
 
         if (IsOwner)
@@ -92,22 +88,21 @@ public class PlayerControl : NetworkBehaviour
         }
     }
 
-    private void TogglePause()
+    public void SetPaused(bool value)
     {
+        IsPaused = value;
         if (IsPaused)
-        {
-            IsPaused = false;
-            Cursor.visible = false;
-        }
-        else
         {
             OnStopMove?.Invoke();
             moveInput = Vector2.zero;
             SendMoveRpc(Vector3.zero);
             SendPositionRpc(transform.position);
-            IsPaused = true;
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
+        }
+        else
+        {
+            Cursor.visible = false;
         }
     }
 
@@ -141,6 +136,8 @@ public class PlayerControl : NetworkBehaviour
             networkGravity.gravity.PlayLockedSound();
             return;
         }
+
+        SendPositionRpc(transform.position);
 
         Vector3 newDirection = Vector3.zero;
         Vector3 cameraForward = Camera.main.transform.forward;
@@ -181,12 +178,7 @@ public class PlayerControl : NetworkBehaviour
         {
             if (GameManager.Instance.inputActions.UI.Menu.triggered)
             {
-                TogglePause();
-            }
-
-            if (cheatsEnabled && GameManager.Instance.inputActions.Player.LoadNextLevel.triggered)
-            {
-                LobbyManager.Instance.LoadNextLevel();
+                SetPaused(!IsPaused);
             }
 
             GetHover();
@@ -272,10 +264,10 @@ public class PlayerControl : NetworkBehaviour
         if (!IsOwner)
             return;
 
+        SendPositionRpc(transform.position);
+
         if (Vector3.Angle(collision.GetContact(0).normal, -networkGravity.GetDirection()) < 45f)
         {
-            SendPositionRpc(transform.position);
-
             ground = collision.collider.transform;
             isGrounded = true;
             OnGroundChanged?.Invoke(ground.tag);
@@ -304,7 +296,7 @@ public class PlayerControl : NetworkBehaviour
         if (!IsOwner)
             return;
 
-        switch(other.tag)
+        switch (other.tag)
         {
             case "DeathZone":
                 Die();
@@ -312,13 +304,13 @@ public class PlayerControl : NetworkBehaviour
         }
     }
 
-    public void UpdatePlayerLocal(string name, Color nameColor, Color bodyColor, string playerId) 
+    public void UpdatePlayerLocal(string name, Color nameColor, Color bodyColor, string playerId)
     {
         this.name = name;
         nameText.text = name;
         nameText.color = nameColor;
         bodyRenderer.material.color = bodyColor;
-        foreach(MeshRenderer meshRenderer in faceRenderers)
+        foreach (MeshRenderer meshRenderer in faceRenderers)
         {
             meshRenderer.material.color = nameColor;
         }
@@ -352,8 +344,8 @@ public class PlayerControl : NetworkBehaviour
         if (IsServer)
             transform.SetParent(null);
         interactable.ForceRemoveInteract();
-        healthSystem.ResetHealth();
-        Rigidbody.linearVelocity = Vector3.zero;
+        if (!Rigidbody.isKinematic)
+            Rigidbody.linearVelocity = Vector3.zero;
 
         SendPositionRpc(transform.position);
 
@@ -381,7 +373,6 @@ public class PlayerControl : NetworkBehaviour
             OnStopMove?.Invoke();
             StartCoroutine(DeathAnimation());
             OnDeath?.Invoke();
-            healthSystem.ResetHealth();
         }
     }
 
@@ -401,7 +392,7 @@ public class PlayerControl : NetworkBehaviour
         Rigidbody.isKinematic = false;
         isDead = false;
         playerModel.gameObject.SetActive(true);
-        
+
         OnRespawn?.Invoke();
     }
 
