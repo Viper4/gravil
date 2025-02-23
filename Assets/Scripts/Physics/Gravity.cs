@@ -55,6 +55,9 @@ public class Gravity : MonoBehaviour
 
     public void SetGravityLock(GravityLock gravityLock)
     {
+        if (!canLock)
+            return;
+
         previousGravityLock = this.gravityLock;
         this.gravityLock = gravityLock;
         direction = gravityLock.GetDirection(lockOffset);
