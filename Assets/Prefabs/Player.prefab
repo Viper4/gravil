@@ -2654,7 +2654,7 @@ SphereCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -2953,66 +2953,6 @@ MonoBehaviour:
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
---- !u!1 &3990541376776410724
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 4636594972601929022}
-  - component: {fileID: 1527828169162251538}
-  m_Layer: 6
-  m_Name: Chat UI
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &4636594972601929022
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3990541376776410724}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 7944599451598403863}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1527828169162251538
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3990541376776410724}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 217df8762bb71ea4bb5ad7b6d3e9364c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  thisPlayer: {fileID: 769060220928426441}
-  chatImage: {fileID: 3145614736917990655}
-  selfMutedIcon: {fileID: 21300000, guid: e744386c88e835d419ea05501fc28c20, type: 3}
-  mutedIcon: {fileID: 21300000, guid: 8e0f492520c965347a02438b22667907, type: 3}
-  silentIcon: {fileID: 21300000, guid: 6b923bb9f545cae4da2eb1b12c4087d8, type: 3}
-  speakingIcons:
-  - {fileID: 21300000, guid: 0043d6119456d9a4e9dc2a4b26fb118d, type: 3}
-  - {fileID: 21300000, guid: 3e12fc9bfb79b3148934656b982907ab, type: 3}
-  - {fileID: 21300000, guid: 3e12fc9bfb79b3148934656b982907ab, type: 3}
-  - {fileID: 21300000, guid: 3e9a8e52f7cb958408c4cb7bea8219b6, type: 3}
-  speakingColors:
-  - {r: 0, g: 1, b: 0, a: 1}
-  - {r: 0, g: 1, b: 0, a: 1}
-  - {r: 1, g: 1, b: 0, a: 1}
-  - {r: 1, g: 0, b: 0, a: 1}
-  maxAudioEnergy: 0.575
 --- !u!1 &4022997878375631696
 GameObject:
   m_ObjectHideFlags: 0
@@ -3734,7 +3674,6 @@ GameObject:
   - component: {fileID: 769060220928426441}
   - component: {fileID: 3478332559051471824}
   - component: {fileID: 7401567204019517753}
-  - component: {fileID: 6282288956281072693}
   - component: {fileID: 1478837183671755085}
   - component: {fileID: 8647607998461161288}
   m_Layer: 6
@@ -3760,7 +3699,6 @@ Transform:
   - {fileID: 535775831249342559}
   - {fileID: 3951934351694719208}
   - {fileID: 8385591283621747728}
-  - {fileID: 4636594972601929022}
   - {fileID: 5376915199996452488}
   - {fileID: 4987224422001610398}
   - {fileID: 1427024892688461942}
@@ -3932,7 +3870,6 @@ MonoBehaviour:
   deathTime: 1
   dieEffectPrefab: {fileID: 1892116224983857932, guid: e3f6c17c00909944eb7a97a833fae725, type: 3}
   canRespawn: 1
-  cheatsEnabled: 0
 --- !u!114 &3478332559051471824
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3992,48 +3929,6 @@ MonoBehaviour:
     m_InternalValue: -1
   directionZ:
     m_InternalValue: 0
---- !u!114 &6282288956281072693
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5060850958413252943}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a369f806f4402a94ab37f9717ecb8d28, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ShowTopMostFoldoutHeaderGroup: 1
-  health:
-    m_InternalValue: 100
-  maxHealth:
-    m_InternalValue: 100
-  healthBarParent: {fileID: 1167405264551353267}
-  healthBar: {fileID: 4491385853362391480}
-  scaleAxis: 0
-  healthAnimator: {fileID: 1575652354875080062}
-  damageEffect: {fileID: 0}
-  OnDamage:
-    m_PersistentCalls:
-      m_Calls: []
-  minDamageSpeed: 20
-  speedDamageMultiplier: 2
-  OnDeath:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 769060220928426441}
-        m_TargetAssemblyTypeName: PlayerControl, Assembly-CSharp
-        m_MethodName: Die
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
 --- !u!114 &1478837183671755085
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5153,6 +5048,7 @@ GameObject:
   - component: {fileID: 881978201593628633}
   - component: {fileID: 8291482096965012677}
   - component: {fileID: 5115941062284187651}
+  - component: {fileID: 1725901748305304271}
   m_Layer: 0
   m_Name: Name Tag UI
   m_TagString: Untagged
@@ -5269,6 +5165,34 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   scaleFactor: 0.002
+--- !u!114 &1725901748305304271
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6061088819223473436}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 217df8762bb71ea4bb5ad7b6d3e9364c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  thisPlayer: {fileID: 769060220928426441}
+  chatImage: {fileID: 3145614736917990655}
+  selfMutedIcon: {fileID: 21300000, guid: e744386c88e835d419ea05501fc28c20, type: 3}
+  mutedIcon: {fileID: 21300000, guid: 8e0f492520c965347a02438b22667907, type: 3}
+  silentIcon: {fileID: 21300000, guid: 6b923bb9f545cae4da2eb1b12c4087d8, type: 3}
+  speakingIcons:
+  - {fileID: 21300000, guid: 0043d6119456d9a4e9dc2a4b26fb118d, type: 3}
+  - {fileID: 21300000, guid: 3e12fc9bfb79b3148934656b982907ab, type: 3}
+  - {fileID: 21300000, guid: 3e12fc9bfb79b3148934656b982907ab, type: 3}
+  - {fileID: 21300000, guid: 3e9a8e52f7cb958408c4cb7bea8219b6, type: 3}
+  speakingColors:
+  - {r: 0, g: 1, b: 0, a: 1}
+  - {r: 0, g: 1, b: 0, a: 1}
+  - {r: 1, g: 1, b: 0, a: 1}
+  - {r: 1, g: 0, b: 0, a: 1}
+  maxAudioEnergy: 0.575
 --- !u!1 &6131557174444412249
 GameObject:
   m_ObjectHideFlags: 0
@@ -6750,7 +6674,7 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -8670,7 +8594,7 @@ SphereCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3

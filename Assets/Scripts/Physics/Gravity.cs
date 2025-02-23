@@ -16,6 +16,7 @@ public class Gravity : MonoBehaviour
     public bool IsLocked { get; private set; }
     [SerializeField] private int lockOffset = 0;
     private GravityLock gravityLock;
+    private GravityLock previousGravityLock;
 
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private AudioClip changeDirectionClip;
@@ -54,6 +55,7 @@ public class Gravity : MonoBehaviour
 
     public void SetGravityLock(GravityLock gravityLock)
     {
+        previousGravityLock = this.gravityLock;
         this.gravityLock = gravityLock;
         direction = gravityLock.GetDirection(lockOffset);
         UpdateDirectionIndicator();
@@ -69,38 +71,18 @@ public class Gravity : MonoBehaviour
             gravityLock.OnDirectionChanged -= GravityLockDirectionChange;
             IsLocked = false;
             gravityLock = null;
+            if(previousGravityLock != null)
+            {
+                SetGravityLock(previousGravityLock);
+            }
         }
     }
 
-    public void CheckColliderEnter(Collider other)
+    public void TryRemoveGravityLock(GravityLock gravityLock)
     {
-        if (!IsLocked && canLock && other.CompareTag("GravityLock") && other.TryGetComponent(out GravityLock gravityLock))
-        {
-            SetGravityLock(gravityLock);
-        }
-    }
-
-    public void CheckColliderExit(Collider other)
-    {
-        if (IsLocked && canLock && other.CompareTag("GravityLock") && other.transform == gravityLock.transform)
+        if(this.gravityLock == gravityLock)
         {
             RemoveGravityLock();
-        }
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (offline)
-        {
-            CheckColliderEnter(other);
-        }
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        if (offline)
-        {
-            CheckColliderExit(other);
         }
     }
 

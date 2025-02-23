@@ -31,22 +31,6 @@ public class NetworkGravity : NetworkBehaviour
         directionZ.OnValueChanged += (prevVal, newVal) => OnDirectionChanged();
     }
 
-    private void OnTriggerEnter(Collider other)
-    {
-        if (!IsOwner)
-            return;
-
-        gravity.CheckColliderEnter(other);
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        if (!IsOwner)
-            return;
-
-       gravity.CheckColliderExit(other);
-    }
-
     private void OnDirectionChanged()
     {
         gravity.SetDirection(new Vector3(directionX.Value, directionY.Value, directionZ.Value));

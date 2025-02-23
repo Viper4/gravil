@@ -19,15 +19,14 @@ public class NetworkRigidbodyTransfer : NetworkRigidbody
             }
             else
             {
-                ChangeOwnershipServerRpc(clientId);
+                ChangeOwnershipRpc(clientId);
             }
         }
     }
 
-    [ServerRpc(RequireOwnership = false)]
-    private void ChangeOwnershipServerRpc(ulong clientId) 
+    [Rpc(SendTo.Server)]
+    private void ChangeOwnershipRpc(ulong clientId)
     {
-        Debug.Log("ChangeOwnershipServerRpc");
         NetworkObject.ChangeOwnership(clientId);
     }
 

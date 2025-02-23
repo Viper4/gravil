@@ -96,6 +96,8 @@ public class LobbyManager : MonoBehaviour
 
     public void SetRegion(string region)
     {
+        if (region == null) 
+            return;
         this.region = region;
     }
 
@@ -515,6 +517,21 @@ public class LobbyManager : MonoBehaviour
         }
     }
 
+    public void LoadLevel(int i)
+    {
+        if (hostLobby != null)
+        {
+            Debug.Log($"Loading level {i}");
+            levelIndex = i;
+            SceneLoader.Instance.ShowLoadingScreen($"Loading {levelName} {levelIndex}...");
+            NetworkManager.Singleton.SceneManager.LoadScene(levelName + " " + levelIndex, LoadSceneMode.Single);
+        }
+        else
+        {
+            Debug.LogWarning("You are not the host of this lobby");
+        }
+    }
+
     public void LoadNextLevel()
     {
         if (hostLobby != null)
@@ -522,7 +539,6 @@ public class LobbyManager : MonoBehaviour
             levelIndex++;
             if (levelIndex >= SceneManager.sceneCountInBuildSettings - 2) // -2 for main menu and lobby
             {
-                PlayerControl.Instance.DisablePhysics();
                 NetworkManager.Singleton.SceneManager.LoadScene("Lobby", LoadSceneMode.Single);
                 OnGameComplete?.Invoke(timer); // Host wont receive OnSceneLoad event
             }
@@ -532,6 +548,10 @@ public class LobbyManager : MonoBehaviour
                 SceneLoader.Instance.ShowLoadingScreen($"Loading {levelName} {levelIndex}...");
                 NetworkManager.Singleton.SceneManager.LoadScene(levelName + " " + levelIndex, LoadSceneMode.Single);
             }
+        }
+        else
+        {
+            Debug.LogWarning("You are not the host of this lobby");
         }
     }
 

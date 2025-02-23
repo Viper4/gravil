@@ -66,7 +66,6 @@ public class Switch : NetworkBehaviour
 
     private void UpdateLocalState(int newState)
     {
-        Debug.Log("Update local state to " + newState);
         state = newState;
         OnChangeState?.Invoke(state);
         TryInvokeStateEvent(state);

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
@@ -36,7 +37,7 @@ public class GameManager : MonoBehaviour
 
     private void OnDisable()
     {
-        inputActions.Disable();
+        inputActions?.Disable();
     }
 
     private void Update()

@@ -32,7 +32,7 @@ public class PlayerSpawn : MonoBehaviour
 
     private void Update()
     {
-        if (GameManager.Instance.inputActions.Player.Reset.triggered)
+        if (GameManager.Instance.inputActions.Player.Reset.triggered && !PlayerControl.Instance.IsPaused)
         {
             PlayerControl.Instance.OnRespawn?.Invoke();
             ResetPlayer();

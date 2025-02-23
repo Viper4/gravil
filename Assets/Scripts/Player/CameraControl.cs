@@ -62,10 +62,24 @@ public class CameraControl : MonoBehaviour
             if (scroll > 0)
             {
                 dstFromTarget = Mathf.Clamp(dstFromTarget - zoomRate, targetDstMinMax.x, targetDstMinMax.y);
+                if (dstFromTarget == 0)
+                {
+                    foreach (MeshRenderer faceRenderer in PlayerControl.Instance.faceRenderers)
+                    {
+                        faceRenderer.enabled = false;
+                    }
+                }
             }
             else if (scroll < 0)
             {
                 dstFromTarget = Mathf.Clamp(dstFromTarget + zoomRate, targetDstMinMax.x, targetDstMinMax.y);
+                if(dstFromTarget > 0)
+                {
+                    foreach (MeshRenderer faceRenderer in PlayerControl.Instance.faceRenderers)
+                    {
+                        faceRenderer.enabled = true;
+                    }
+                }
             }
 
             reticle.gameObject.SetActive(true);
